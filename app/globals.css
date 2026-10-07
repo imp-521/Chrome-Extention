@@ -1,1 +1,21 @@
 @import "tailwindcss";
+@font-face {
+    font-family: "Heathergreen";
+    src: url(/Heathergreen.otf);
+}
+
+@font-face {
+    font-family: "Gilory-Medium";
+    src: url(/Gilroy-Medium.ttf);
+}
+
+@font-face {
+    font-family: "Gilory-Bold";
+    src : url(/Gilory-Bold.ttf);
+}
+
+@theme{
+    --font-heathergreen: "Heathergreen";
+    --font-Gilory-medium : "Gilory-Medium";
+    --font-Gilory-Bold : "Gilory-Bold";
+}

@@ -106,23 +106,35 @@ const Clock = () => {
     ? `${time.getHours()} : ${time.getMinutes().toString().padStart(2, "0")}`
     : "";
 
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+  });
+  const date = time
+    ? `${time.getDate()} ${formatter.format(time).toUpperCase()}`
+    : "";
 
-  const date = time ? `${time.getMonth() + 1}/ ${time.getDate()}` : ""
-  const formatter = new Intl.DateTimeFormat("en-US", { 
-    month: "short"
-  })
-  formatter.format(new Date())
+  const yearFormatter = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    year: "numeric",
+  });
+  const dayAndYear = time ? yearFormatter.format(time) : "";
 
   return (
-    <div className="flex flex-col w-full h-20 justify-center align-center">
-      {clock}
-      <div>
-        {weather &&
-          <>
-           {Math.round(weather.temperature)}°C
-          </>
-        }
-        {weather && weatherCodeToEmoji(weather.weatherCode)}
+    <div className="bg-orange-400 w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] min-w-[240px] min-h-[240px] flex items-start justify-between flex-col">
+      <div className="font-Gilory-medium">{date}</div>
+
+      <div className="font-heathergreen text-9xl">{clock}</div>
+
+      <div className="flex flex-row-reverse w-full items-center justify-between">
+        <div className="font-Gilory-Bold">
+          {weather && (
+            <>
+              {weather && weatherCodeToEmoji(weather.weatherCode)}
+              {Math.round(weather.temperature)}°C
+            </>
+          )}
+        </div>
+        <div className="font-Gilory-medium">{dayAndYear}</div>
       </div>
     </div>
   );
