@@ -79,12 +79,23 @@ const Clock = () => {
   const getWeather = async (latitude: number, longitude: number) => {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code`;
 
-    const response = await fetch(url);
-    const data = await response.json();
-    setWeather({
-      temperature: data.current.temperature_2m,
-      weatherCode: data.current.weather_code,
-    });
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("Weather request failed");
+      }
+
+      const data = await response.json();
+
+      setWeather({
+        temperature: data.current.temperature_2m,
+        weatherCode: data.current.weather_code,
+      });
+    } catch (error) {
+      console.error("Weather unavailable:", error);
+      setWeather(null);
+    }
   };
 
   useEffect(() => {
@@ -120,21 +131,29 @@ const Clock = () => {
   const dayAndYear = time ? yearFormatter.format(time) : "";
 
   return (
-    <div className="bg-orange-400 w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] min-w-[240px] min-h-[240px] flex items-start justify-between flex-col">
-      <div className="font-Gilory-medium">{date}</div>
+    <div className="flex items-start flex-col rounded-[26px] absolute left-5 bottom-5 select-none z-20">
+      <div className="font-Gilory-Bold">
+        <span className="text-slate-50 text-xl">{date}</span>
+      </div>
 
-      <div className="font-heathergreen text-9xl">{clock}</div>
+      <div className="font-heathergreen text-[50vh] leading-[0.9]">
+        <h1 className="m-0 relative -top-[0.07em]">{clock}</h1>
+      </div>
 
       <div className="flex flex-row-reverse w-full items-center justify-between">
-        <div className="font-Gilory-Bold">
+        <div className="font-Gilory-Bold flex gap-1">
           {weather && (
             <>
-              {weather && weatherCodeToEmoji(weather.weatherCode)}
-              {Math.round(weather.temperature)}°C
+              <span>{weather && weatherCodeToEmoji(weather.weatherCode)}</span>
+              <span className="text-slate-50">
+                {Math.round(weather.temperature)}°C
+              </span>
             </>
           )}
         </div>
-        <div className="font-Gilory-medium">{dayAndYear}</div>
+        <div className="font-Gilory-medium">
+          <span className="text-slate-50">{dayAndYear}</span>
+        </div>
       </div>
     </div>
   );
