@@ -67,6 +67,7 @@ const Clock = () => {
   };
 
   useEffect(() => {
+    setTime(new Date());
     const interval = setInterval(() => {
       setTime(new Date());
     }, 1000);
