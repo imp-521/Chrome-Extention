@@ -15,11 +15,11 @@ const page = () => {
       style={{ backgroundImage: "url('/default-wallpaper.jpg')" }}
       className="h-dvh w-full overflow-hidden bg-cover bg-center bg-no-repeat relative"
     >
+      <Clock isDashboard={showDashboard}/>
       {showDashboard ? (
         <Dashboard onClose={() => setShowDashboard(false)}/>
       ) : (
         <>
-          <Clock />
           <Shortcuts />
           <StartButton onStart={()=> setShowDashboard(true)}/>
           <SettingsButton />

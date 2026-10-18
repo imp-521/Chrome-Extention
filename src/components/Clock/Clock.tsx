@@ -6,9 +6,16 @@ type Weather = {
   weatherCode: number;
 };
 
-const Clock = () => {
+type ClockProps = {
+  isDashboard?: boolean;
+};
+
+const Clock = ({ isDashboard }: ClockProps) => {
   const [time, setTime] = useState<Date | null>(null);
-  const [weather, setWeather] = useState<Weather | null>(null);
+  const [weather, setWeather] = useState<Weather>({
+    weatherCode: 0,
+    temperature: 22,
+  });
   const weatherCodeToEmoji = (weatherCode: number) => {
     switch (weatherCode) {
       case 0:
@@ -77,45 +84,60 @@ const Clock = () => {
     };
   }, []);
 
-  const getWeather = async (latitude: number, longitude: number) => {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code`;
-
-    try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("Weather request failed");
-      }
-
-      const data = await response.json();
-
-      setWeather({
-        temperature: data.current.temperature_2m,
-        weatherCode: data.current.weather_code,
-      });
-    } catch (error) {
-      console.error("Weather unavailable:", error);
-      setWeather(null);
-    }
-  };
-
   useEffect(() => {
+    let active = true
+    const fallbackLatitude: number = 29.6103;
+    const fallbackLongitude: number = 52.5311;
+
+    const getWeather = async (latitude: number, longitude: number) => {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code`;
+
+      try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error("Weather request failed");
+        }
+
+        const data = await response.json();
+
+        if (!active) return
+
+        setWeather({
+          temperature: data.current.temperature_2m,
+          weatherCode: data.current.weather_code,
+        });
+      } catch (error) {
+        console.error("Weather unavailable:", error);
+      }
+    };
+
+    if (!("geolocation" in navigator)) {
+      getWeather(fallbackLatitude, fallbackLongitude);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        if (!active) return
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
         getWeather(latitude, longitude);
       },
-      (error) => {
-        const fallbackLatitude: number = 29.6103;
-        const fallbackLongitude: number = 52.5311;
+      () => {
+        if (!active) return
         getWeather(fallbackLatitude, fallbackLongitude);
       },
+      { timeout: 8000 },
     );
+
+    return () =>{
+      active = false
+    }
+
   }, []);
 
   const clock = time
-    ? `${time.getHours()} : ${time.getMinutes().toString().padStart(2, "0")}`
+    ? `${time.getHours()}:${time.getMinutes().toString().padStart(2, "0")}`
     : "";
 
   const formatter = new Intl.DateTimeFormat("en-US", {
@@ -132,25 +154,25 @@ const Clock = () => {
   const dayAndYear = time ? yearFormatter.format(time) : "";
 
   return (
-    <div className="flex items-start flex-col rounded-[26px] absolute left-5 bottom-5 select-none z-20">
-      <div className="font-Gilory-Bold">
-        <span className="text-slate-50 text-xl">{date}</span>
+    <div
+      className={`flex items-start flex-col rounded-[26px] absolute left-5 bottom-5 select-none z-20 origin-bottom-left transition-all duration-700 ease-out ${isDashboard ? "scale-[0.60]" : "scale-100"}`}
+    >
+      <div className="font-Gilory-Bold tracking-widest pl-1 z-10 absolute">
+        <span className="text-slate-50 text-xl md:text-2xl">{date}</span>
       </div>
 
-      <div className="font-heathergreen text-[50vh] leading-[0.9]">
-        <h1 className="m-0 relative -top-[0.07em]">{clock}</h1>
+      <div>
+        <h1 className="leading-[0.9] relative font-heathergreen text-[50vh]">
+          {clock}
+        </h1>
       </div>
 
-      <div className="flex flex-row-reverse w-full items-center justify-between">
-        <div className="font-Gilory-Bold flex gap-1">
-          {weather && (
-            <>
-              <span>{weather && weatherCodeToEmoji(weather.weatherCode)}</span>
-              <span className="text-slate-50">
-                {Math.round(weather.temperature)}°C
-              </span>
-            </>
-          )}
+      <div className="flex flex-row-reverse w-full items-center justify-between pl-1 text-lg gap-4">
+        <div className="font-Gilory-Bold flex gap-1.5 items-center px-3 py-1 text-lg">
+          <span>{weatherCodeToEmoji(weather.weatherCode)}</span>
+          <span className="text-slate-50">
+            {Math.round(weather.temperature)}°C
+          </span>
         </div>
         <div className="font-Gilory-medium">
           <span className="text-slate-50">{dayAndYear}</span>
