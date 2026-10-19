@@ -157,7 +157,7 @@ const Clock = ({ isDashboard }: ClockProps) => {
     <div
       className={`flex items-start flex-col rounded-[26px] absolute left-5 bottom-5 select-none z-20 origin-bottom-left transition-all duration-700 ease-out ${isDashboard ? "scale-[0.60]" : "scale-100"}`}
     >
-      <div className="font-Gilory-Bold tracking-widest pl-1 z-10 absolute">
+      <div className="font-Gilory-Bold tracking-widest pl-1 z-10 absolute top-0 drop-shadow-md uppercase">
         <span className="text-slate-50 text-xl md:text-2xl">{date}</span>
       </div>
 

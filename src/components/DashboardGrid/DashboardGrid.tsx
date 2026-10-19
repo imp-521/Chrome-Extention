@@ -72,7 +72,7 @@ const DashboardGrid = () => {
             return(
                 <div key={widget.id} style={{
                   gridColumn: `${widget.col} / span ${widget.cols}`,
-                  gridRow: `${widget.row} / span ${widget.rows}`}} className='min-h-0 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-white/10 p-4 text-white backdrop-blur-md'>
+                  gridRow: `${widget.row} / span ${widget.rows}`}} className=''>
                    {widget.id === "timer" ? (<Pomodoro />) : (<h2>{widget.title}</h2>)}
                 </div>
             )
