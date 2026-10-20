@@ -67,7 +67,7 @@ const widgets = [
 
 const DashboardGrid = () => {
   return (
-    <div style={{ gridTemplateColumns: "repeat(24, minmax(0, 1fr))" }} className='w-full h-full grid auto-rows-[80px] gap-3 overflow-hidden p-6'>
+    <div style={{ gridTemplateColumns: "repeat(24, minmax(0, 1fr))" }} className='w-full h-full grid grid-auto-rows: minmax(0, 1fr) gap-3 overflow-auto p-6'>
         {widgets.map((widget)=>{
             return(
                 <div key={widget.id} style={{
