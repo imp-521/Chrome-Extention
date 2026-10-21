@@ -89,7 +89,7 @@ const Pomodoro = () => {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center font-heathergreen text-[80px] leading-none tabular-nums pb-2">
+      <div className="flex flex-1 items-center justify-center font-heathergreen text-[95px] leading-none tabular-nums pb-2">
         {String(minutes).padStart(2, "0")}:
         {String(remainingSeconds).padStart(2, "0")}
       </div>
@@ -103,7 +103,7 @@ const Pomodoro = () => {
                 ? handleResume
                 : handleStart
           }
-          className="flex min-w-[80px] items-center justify-center rounded-full border border-white/15 bg-white/15 px-5 py-1 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-white/25 active:scale-95"
+          className="flex flex-1 items-center justify-center rounded-full border border-white/15 bg-white/15 px-5 py-1 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-white/25 active:scale-95"
         >
           {status === "running"
             ? "Pause"
@@ -114,7 +114,7 @@ const Pomodoro = () => {
 
         <button
           onClick={handleReset}
-          className="flex min-w-[80px] items-center justify-center rounded-full border border-white/15 bg-white/15 px-5 py-1 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-white/25 active:scale-95"
+          className="flex flex-1 items-center justify-center rounded-full border border-white/15 bg-white/15 px-5 py-1 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-white/25 active:scale-95"
         >
           Reset
         </button>
