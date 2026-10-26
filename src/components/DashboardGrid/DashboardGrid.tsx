@@ -238,13 +238,50 @@ const getDeviceTier = (width: number) => {
   return width >= 1600 ? "desktop" : "laptop";
 };
 
-
 // using this function we always keep the cols in the right regin
 const getWidgetCols = (widget: Widget) => {
-  return Math.max(
-    widget.minCols,
-    Math.min(widget.maxCols, widget.cols)
-  );
+  return Math.max(widget.minCols, Math.min(widget.maxCols, widget.cols));
+};
+
+// this function has the same work as the privous function but this is for rows
+const getWidgetRows = (widget: Widget) => {
+  return Math.max(widget.minRows, Math.min(widget.maxRows, widget.rows));
+};
+
+// with using this function we regocnize that this place is stuibale or not
+const canPlace = (
+  widget: Widget,
+  col: number,
+  row: number,
+  widgets: Widget[],
+  grid: { cols: number; rows: number },
+): boolean => {
+  const cols = getWidgetCols(widget);
+  const rows = getWidgetRows(widget);
+
+  if (
+    col < 1 ||
+    row < 1 ||
+    col + cols - 1 > grid.cols ||
+    row + rows - 1 > grid.rows
+  ) {
+    return false;
+  }
+
+  return widgets.every((other) => {
+    if (other.id === widget.id) return true;
+
+    const otherCols = getWidgetCols(other);
+    const otherRows = getWidgetRows(other);
+
+    const horizontalOverlap =
+      col < other.col + otherCols && other.col < col + cols;
+
+    const verticalOverlap =
+      row < other.row + otherRows && other.row < row + rows;
+
+    return !(horizontalOverlap && verticalOverlap);
+  });
 };
 
 // in this function we can recive number of rows and cols and it despends on what divice we are using
@@ -275,7 +312,36 @@ const DashboardGrid = () => {
     };
   });
 
-  const widgets = grid.tier === "desktop" ? desktopWidgets : laptopWidgets;
+  // saving what kind of screen we are using
+  const [widgets, setWidgets] = useState<Widget[]>(() =>
+    grid.tier === "desktop" ? desktopWidgets : laptopWidgets,
+  );
+
+  // update the screen with changing the tier
+  useEffect(() => {
+    setWidgets(grid.tier === "desktop" ? desktopWidgets : laptopWidgets);
+  }, [grid.tier]);
+
+  const moveWidget = (
+    widgetId: WidgetId,
+    newCol: number,
+    newRow: number,
+  ): void => {
+    const widget = widgets.find((item) => item.id === widgetId);
+
+    if (!widget) return;
+    if (!widget.draggable) return;
+
+    const isValid = canPlace(widget, newCol, newRow, widgets, grid);
+
+    if (!isValid) return;
+
+    setWidgets((currentWidgets) =>
+      currentWidgets.map((item) =>
+        item.id === widgetId ? { ...item, col: newCol, row: newRow } : item,
+      ),
+    );
+  };
 
   // in this hook we update the amount of row and cols with resizing the screen and then we set it in the state
   useEffect(() => {
@@ -309,14 +375,27 @@ const DashboardGrid = () => {
     >
       {widgets.map((widget) => {
         const Component = widgetsComponents[widget.id];
+
+        // in this Variable we are saving the amount of cols that we have permition
+        const safeCols = getWidgetCols(widget);
+
+        // in this variable we are saving the last col that we can start from
+        const maxStartCol = grid.cols - safeCols + 1;
+
+        // in this variable we are checking if the natural amount of col was higher than the mount we have permission we stop it
+        const safeCol = Math.min(widget.col, maxStartCol);
+
+        const safeRows = getWidgetRows(widget);
+        const maxStartRow = grid.rows - safeRows + 1;
+        const safeRow = Math.min(widget.row, maxStartRow);
         return (
           <div
             key={widget.id}
             style={{
-              gridColumn: `${widget.col} / span ${getWidgetCols(widget)}`,
-              gridRow: `${widget.row} / span ${widget.rows}`,
+              gridColumn: `${safeCol} / span ${safeCols}`,
+              gridRow: `${safeRow} / span ${safeRows}`,
             }}
-            className=" "
+            className="bg-white"
           >
             {Component ? <Component /> : <h2>{widget.title}</h2>}
           </div>
