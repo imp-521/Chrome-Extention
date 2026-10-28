@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Pomodoro from "../Pomodoro/Pomodoro";
 
 type WidgetId =
@@ -317,6 +317,33 @@ const DashboardGrid = () => {
     grid.tier === "desktop" ? desktopWidgets : laptopWidgets,
   );
 
+  // with useing this state we are saving the widgetId that we have selcted for dragging
+  const [draggingWidgetId, setDraggingWidgetId] = useState<WidgetId | null>(
+    null,
+  );
+
+  const draggingWidget = widgets.find(
+    (widget) => widget.id === draggingWidgetId,
+  );
+
+  // in this state we are saving the position of mouse at the end of the dragging
+  const [targetPosition, setTargetPosition] = useState<{
+    col: number;
+    row: number;
+  } | null>(null);
+
+  const isTargetValid =
+    targetPosition !== null &&
+    draggingWidget !== undefined &&
+    canPlace(
+      draggingWidget,
+      targetPosition.col,
+      targetPosition.row,
+      widgets,
+      grid,
+    );
+
+  const gridRef = useRef<HTMLDivElement>(null);
   // update the screen with changing the tier
   useEffect(() => {
     setWidgets(grid.tier === "desktop" ? desktopWidgets : laptopWidgets);
@@ -371,6 +398,50 @@ const DashboardGrid = () => {
         gridTemplateColumns: `repeat(${grid.cols}, minmax(0, 1fr))`,
         gridTemplateRows: `repeat(${grid.rows}, minmax(0, 1fr))`,
       }}
+      ref={gridRef}
+      onMouseMove={(event) => {
+        if (draggingWidgetId === null) return;
+
+        const rectElement = gridRef.current;
+        if (!rectElement) return;
+
+        const rect = rectElement.getBoundingClientRect();
+        const styles = window.getComputedStyle(rectElement);
+
+        const paddingLeft = parseFloat(styles.paddingLeft);
+        const paddingTop = parseFloat(styles.paddingTop);
+
+        const gapX = parseFloat(styles.columnGap);
+        const gapY = parseFloat(styles.rowGap);
+
+        const mouseX = event.clientX - rect.left - paddingLeft;
+        const mouseY = event.clientY - rect.top - paddingTop;
+
+        const contentWidth =
+          rect.width - paddingLeft - parseFloat(styles.paddingRight);
+
+        const contentHeight =
+          rect.height - paddingTop - parseFloat(styles.paddingBottom);
+
+        const cellWidth = (contentWidth - gapX * (grid.cols - 1)) / grid.cols;
+        const cellHeight = (contentHeight - gapY * (grid.rows - 1)) / grid.rows;
+
+        const rawCol = Math.floor(mouseX / (cellWidth + gapX)) + 1;
+        const rawRow = Math.floor(mouseY / (cellHeight + gapY)) + 1;
+
+        const col = Math.max(1, Math.min(grid.cols, rawCol));
+        const row = Math.max(1, Math.min(grid.rows, rawRow));
+
+        setTargetPosition({ col, row });
+      }}
+      onMouseUp={() => {
+        if (draggingWidgetId !== null && targetPosition !== null) {
+          moveWidget(draggingWidgetId, targetPosition.col, targetPosition.row);
+        }
+
+        setDraggingWidgetId(null);
+        setTargetPosition(null);
+      }}
       className="w-full h-full grid gap-3 overflow-auto p-6"
     >
       {widgets.map((widget) => {
@@ -395,12 +466,29 @@ const DashboardGrid = () => {
               gridColumn: `${safeCol} / span ${safeCols}`,
               gridRow: `${safeRow} / span ${safeRows}`,
             }}
-            className="bg-white"
+            onMouseDown={() => {
+              setDraggingWidgetId(widget.id);
+            }}
+            className=""
           >
             {Component ? <Component /> : <h2>{widget.title}</h2>}
           </div>
         );
       })}
+
+      {targetPosition !== null && draggingWidget && (
+        <div
+          style={{
+            gridColumn: `${targetPosition.col} / span ${getWidgetCols(draggingWidget)}`,
+            gridRow: `${targetPosition.row} / span ${getWidgetRows(draggingWidget)}`,
+          }}
+          className={`${
+            isTargetValid
+              ? "bg-green-400/30 border-2 border-green-400"
+              : "bg-red-400/30 border-2 border-red-400"
+          } rounded-lg pointer-events-none`}
+        />
+      )}
     </div>
   );
 };
