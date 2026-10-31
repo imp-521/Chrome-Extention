@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import Pomodoro from "../Pomodoro/Pomodoro";
+import WaterReminder from "../WaterReminder/WaterReminder";
 
 type WidgetId =
   | "timer"
@@ -231,6 +232,7 @@ const desktopWidgets: Widget[] = [
 // we defenited this object to connect each id to each component
 const widgetsComponents: Partial<Record<WidgetId, React.ComponentType>> = {
   timer: Pomodoro,
+  waterReminder : WaterReminder,
 };
 
 // this is a fucntion that we use it  for finding out that the device is desktop or laptop
@@ -466,9 +468,9 @@ const DashboardGrid = () => {
               gridColumn: `${safeCol} / span ${safeCols}`,
               gridRow: `${safeRow} / span ${safeRows}`,
             }}
-            onMouseDown={() => {
-              setDraggingWidgetId(widget.id);
-            }}
+            // onMouseDown={() => {
+            //   setDraggingWidgetId(widget.id);
+            // }}
             className=""
           >
             {Component ? <Component /> : <h2>{widget.title}</h2>}
@@ -476,7 +478,7 @@ const DashboardGrid = () => {
         );
       })}
 
-      {targetPosition !== null && draggingWidget && (
+      {/* {targetPosition !== null && draggingWidget && (
         <div
           style={{
             gridColumn: `${targetPosition.col} / span ${getWidgetCols(draggingWidget)}`,
@@ -488,7 +490,7 @@ const DashboardGrid = () => {
               : "bg-red-400/30 border-2 border-red-400"
           } rounded-lg pointer-events-none`}
         />
-      )}
+      )} */}
     </div>
   );
 };
