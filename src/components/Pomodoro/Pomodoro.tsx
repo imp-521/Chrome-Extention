@@ -1,6 +1,8 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from "react";
 import { FaPlay, FaPause, FaRedoAlt } from "react-icons/fa";
+import { MdDragIndicator } from "react-icons/md";
+import { RiPauseFill, RiPlayFill, RiRestartLine } from "react-icons/ri";
 
 const Pomodoro = () => {
   const [seconds, setSeconds] = useState(24 * 60);
@@ -59,9 +61,12 @@ const Pomodoro = () => {
     <div className="figma-glass-static relative flex h-full w-full flex-col justify-between overflow-hidden rounded-[26px] px-[20px] py-[13px] text-white select-none">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold tracking-wide">{mode === "focus" ? "Focus" : "Rest"}</span>
+          <span className="text-white/70 text-xs tracking-wide flex items-center justify-center gap-1">
+            <MdDragIndicator className="text-lg cursor-grab" />
+            {mode === "focus" ? "Focus" : "Rest"}
+          </span>
         </div>
-        <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/20 p-1 backdrop-blur-md">
+        <div className="flex items-center gap-1 rounded-full bg-[#0F172A] p-1 backdrop-blur-md">
           <button
             onClick={() => {
               handleChangeMode("focus");
@@ -80,7 +85,7 @@ const Pomodoro = () => {
             }}
             className={`rounded-full px-3 py-1 text-xs font-medium ${
               mode === "rest"
-                ? "bg-white/15 text-white"
+                ? "bg-white/20 text-white shadow-sm"
                 : "text-white/60 hover:text-white"
             }`}
           >
@@ -103,20 +108,35 @@ const Pomodoro = () => {
                 ? handleResume
                 : handleStart
           }
-          className="flex flex-1 items-center justify-center rounded-full border border-white/15 bg-white/15 px-5 py-1 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-white/25 active:scale-95"
+          style={{ backgroundColor: "#0F172A" }}
+          className="flex flex-1 items-center justify-center rounded-full cursor-pointer px-5 py-1 text-sm font-medium text-white"
         >
-          {status === "running"
-            ? "Pause"
-            : status === "paused"
-              ? "Resume"
-              : "Start"}
+          <span className="flex items-center gap-2">
+            {status === "running" ? (
+              <>
+                <RiPauseFill />
+                Pause
+              </>
+            ) : status === "paused" ? (
+              <>
+                <RiPlayFill />
+                Resume
+              </>
+            ) : (
+              <>
+                <RiPlayFill />
+                Start
+              </>
+            )}
+          </span>
         </button>
 
         <button
           onClick={handleReset}
-          className="flex flex-1 items-center justify-center rounded-full border border-white/15 bg-white/15 px-5 py-1 text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-white/25 active:scale-95"
+          style={{ backgroundColor: "#0F172A" }}
+          className="flex flex-1 items-center justify-center rounded-full cursor-pointer px-5 py-1 text-sm font-medium text-white gap-2"
         >
-          Reset
+          <RiRestartLine /> Reset
         </button>
       </div>
     </div>
