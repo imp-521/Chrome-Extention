@@ -62,7 +62,7 @@ const Pomodoro = () => {
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-white/70 text-xs tracking-wide flex items-center justify-center gap-1">
-            <MdDragIndicator className="text-lg cursor-grab" />
+            <MdDragIndicator className="text-lg cursor-grab text-white/70" />
             {mode === "focus" ? "Focus" : "Rest"}
           </span>
         </div>

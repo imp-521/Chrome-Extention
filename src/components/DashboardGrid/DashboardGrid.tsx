@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Pomodoro from "../Pomodoro/Pomodoro";
 import WaterReminder from "../WaterReminder/WaterReminder";
+import SongPlayer from "../SongPlayer/SongPlayer";
 
 type WidgetId =
   | "timer"
@@ -233,6 +234,7 @@ const desktopWidgets: Widget[] = [
 const widgetsComponents: Partial<Record<WidgetId, React.ComponentType>> = {
   timer: Pomodoro,
   waterReminder : WaterReminder,
+  songPlayer : SongPlayer
 };
 
 // this is a fucntion that we use it  for finding out that the device is desktop or laptop

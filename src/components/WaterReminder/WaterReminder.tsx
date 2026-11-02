@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MdDragIndicator } from "react-icons/md";
-import { RiNotification3Fill, RiNotification3Line } from "react-icons/ri";
+import { RiCupLine, RiDrinksLine, RiDropLine, RiNotification3Fill, RiNotification3Line } from "react-icons/ri";
 
 const WaterReminder = () => {
   const [goalMl, setGoalMl] = useState(2000);
@@ -71,7 +71,7 @@ const WaterReminder = () => {
       {/* header */}
       <div className="w-full flex items-center justify-between z-10 relative">
         <div className="flex items-center gap-1.5 text-white/70 text-xs">
-          <MdDragIndicator className="text-lg cursor-grab" />
+          <MdDragIndicator className="text-lg cursor-grab text-white/70" />
           <span>Water Reminder</span>
         </div>
 
@@ -158,7 +158,7 @@ const WaterReminder = () => {
                   : "cursor-pointer"
               }`}
             >
-              <span>1 Cup</span>
+              <span className="flex items-center gap-1"><RiDropLine/>1 Cup</span>
             </button>
 
             <button
@@ -172,7 +172,7 @@ const WaterReminder = () => {
                   : "cursor-pointer"
               }`}
             >
-              <span>2 Cups</span>
+              <span className="flex items-center gap-1"><RiDrinksLine/>Cups</span>
             </button>
           </div>
         </div>

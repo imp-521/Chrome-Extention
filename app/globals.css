@@ -60,5 +60,5 @@ body {
 }
 
 .animate-wave-loop {
-  animation: waveLoop 2s linear infinite;
+  animation: waveLoop 1s linear infinite;
 }
