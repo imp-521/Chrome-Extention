@@ -62,3 +62,11 @@ body {
 .animate-wave-loop {
   animation: waveLoop 1s linear infinite;
 }
+
+@utility scrollbar-hide {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  scrollbar-width: none;
+}

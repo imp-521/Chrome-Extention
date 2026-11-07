@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { MdDragIndicator } from "react-icons/md";
 import {
   RiCheckboxCircleFill,
@@ -23,10 +23,10 @@ const makeId = () => {
   return String(Date.now() + Math.random());
 };
 
-
 const Todo = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [newText, setNewText] = useState("");
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "task-1",
@@ -68,8 +68,22 @@ const Todo = () => {
     setEditingId(null);
     setEditText("");
   };
+  const addTask = () => {
+    const text = newText.trim();
+
+    if (!text) return;
+
+    const task = {
+      id: makeId(),
+      text,
+      done: false,
+    };
+
+    setTasks((prev) => [...prev, task]);
+    setNewText("");
+  };
   return (
-    <div className="w-full h-full figma-glass-static rounded-[26px] p-4 text-white flex flex-col">
+    <div className="w-full h-full figma-glass-static group/widget rounded-[26px] p-4 text-white flex flex-col">
       {/* Header */}
 
       <div className="flex items-center justify-start gap-1 mb-3">
@@ -80,7 +94,8 @@ const Todo = () => {
           Notepad
         </span>
       </div>
-      <div>
+
+      <div className="w-full flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col gap-1.5 z-10 pr-0.5">
         {tasks.map((task) => (
           <div
             key={task.id}
@@ -143,6 +158,28 @@ const Todo = () => {
             </button>
           </div>
         ))}
+        <div
+          className={`flex items-center gap-2.5 text-xs sm:text-sm py-0.5 transition-opacity duration-200 ${
+            newText
+              ? "opacity-100"
+              : "opacity-0 group-hover/widget:opacity-100 focus-within:opacity-100"
+          }`}
+        >
+          <RiCheckboxBlankCircleLine className="text-base text-white/30 shrink-0" />
+
+          <input
+            value={newText}
+            onChange={(e) => setNewText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addTask();
+              }
+            }}
+            className="w-full bg-transparent outline-none font-gilroy-medium text-white placeholder:text-white/30 text-xs sm:text-sm"
+            placeholder="Write a task..."
+          />
+        </div>
       </div>
     </div>
   );
