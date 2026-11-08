@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MdDragIndicator } from "react-icons/md";
+import { storageGet, storageSet } from "../../utils/storage";
 import {
   RiCheckboxCircleFill,
   RiCheckboxBlankCircleLine,
@@ -11,7 +12,7 @@ type Task = {
   text: string;
   done: boolean;
 };
-
+const STORAGE_KEY = "todo_items_v2";
 const makeId = () => {
   if (
     typeof crypto !== "undefined" &&
@@ -27,6 +28,7 @@ const Todo = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [newText, setNewText] = useState("");
+  const isHydratedRef = useRef(false);
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "task-1",
@@ -34,6 +36,28 @@ const Todo = () => {
       done: false,
     },
   ]);
+  
+  // getting data from storage
+  useEffect(() => {
+    const loadTasks = async () => {
+      const savedTasks = await storageGet(STORAGE_KEY);
+
+      if (Array.isArray(savedTasks)) {
+        setTasks(savedTasks);
+      }
+
+      isHydratedRef.current = true;
+    };
+
+    loadTasks();
+  }, []);
+
+  // saving data in the storage
+  useEffect(() => {
+    if (!isHydratedRef.current) return;
+    storageSet(STORAGE_KEY, tasks);
+  }, [tasks]);
+
   const toggleDone = (id: string) => {
     setTasks((prev) =>
       prev.map((task) =>
@@ -169,6 +193,7 @@ const Todo = () => {
 
           <input
             value={newText}
+            onBlur={addTask}
             onChange={(e) => setNewText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {

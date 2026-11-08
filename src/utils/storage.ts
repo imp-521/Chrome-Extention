@@ -1,5 +1,6 @@
 /// <reference types="chrome" />
 
+
 export const storageGet = async (key: string) => {
   try {
     if (hasChromeStorage) {
@@ -7,7 +8,11 @@ export const storageGet = async (key: string) => {
       return result[key] ?? null;
     }
 
-    return localStorage.getItem(key);
+    const raw = localStorage.getItem(key);
+
+    if (raw === null) return null;
+
+    return JSON.parse(raw);
   } catch (error) {
     console.error("Storage read failed:", error);
     return null;
@@ -16,6 +21,13 @@ export const storageGet = async (key: string) => {
 
 export const storageSet = async (key: string, value: unknown) => {
   try {
+    if (hasChromeStorage) {
+      await chrome.storage.local.set({
+        [key]: value,
+      });
+      return;
+    }
+
     const serialized = JSON.stringify(value);
 
     if (serialized === undefined) return;
@@ -28,6 +40,11 @@ export const storageSet = async (key: string, value: unknown) => {
 
 export const storageRemove = async (key: string) => {
   try {
+    if (hasChromeStorage) {
+      await chrome.storage.local.remove(key);
+      return;
+    }
+
     localStorage.removeItem(key);
   } catch (error) {
     console.error("Storage remove failed:", error);
