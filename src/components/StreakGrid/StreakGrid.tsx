@@ -2,6 +2,12 @@ import React from "react";
 import { MdDragIndicator } from "react-icons/md";
 import { ActivityCalendar } from "react-activity-calendar";
 
+type ActivityDay = {
+  date: string;
+  count: number;
+  level: number;
+};
+
 const demoData = Array.from({ length: 365 }, (_, index) => {
   const date = new Date();
   date.setUTCDate(date.getUTCDate() - (364 - index));
@@ -15,7 +21,41 @@ const demoData = Array.from({ length: 365 }, (_, index) => {
   };
 });
 
+const computeStats = (data: ActivityDay[]) => {
+  let totalActiveDays = 0;
+  let maxStreak = 0;
+  let currentRun = 0;
+
+  for (const day of data) {
+    if (day.count > 0) {
+      totalActiveDays += 1;
+      currentRun += 1;
+
+      if (currentRun > maxStreak) {
+        maxStreak = currentRun;
+      }
+    } else {
+      currentRun = 0;
+    }
+  }
+  let currentStreak = 0;
+  let idx = data.length - 1;
+  if (data[idx].count === 0 && data[idx - 1]?.count > 0) {
+    idx -= 1;
+  }
+  while (idx >= 0 && data[idx].count > 0) {
+    currentStreak += 1;
+    idx -= 1;
+  }
+
+  return { totalActiveDays, maxStreak, currentStreak };
+};
+const { totalActiveDays, maxStreak, currentStreak } = computeStats(demoData);
 const StreakGrid = () => {
+  const [activityMap, setActivityMap] = React.useState<Record<
+    string,
+    number
+  > | null>(null);
   return (
     <div className="figma-glass-static rounded-[26px] px-4 py-2.5 text-white font-gilroy-medium w-full h-full flex flex-col shadow-2xl relative">
       {/* Header */}
@@ -23,30 +63,30 @@ const StreakGrid = () => {
         {/* Title */}
         <div className="flex items-center gap-1.5 text-white/70 text-xs">
           <MdDragIndicator className="text-lg cursor-grab text-white/70" />
-          <span>Streak Grid View</span>
+          <span className="select-none">Streak Grid View</span>
         </div>
 
         {/* Stats */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 text-xs">
+          <div className="flex items-center gap-1 text-xs select-none">
             <span>Active Days:</span>
-            <span>12</span>
+            <span>{totalActiveDays}</span>
           </div>
 
-          <div className="flex items-center gap-1 text-xs">
+          <div className="flex items-center gap-1 text-xs select-none">
             <span>Current Streak:</span>
-            <span>3</span>
+            <span>{currentStreak}</span>
           </div>
 
-          <div className="flex items-center gap-1 text-xs">
+          <div className="flex items-center gap-1 text-xs select-none">
             <span>Max Streak:</span>
-            <span>7</span>
+            <span>{maxStreak}</span>
           </div>
         </div>
       </div>
 
       <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-x-auto scrollbar-hide z-10 relative pt-1.5">
-        <span className="text-white/40 text-xs">
+        <span className="text-white/40 text-xs select-none">
           <ActivityCalendar
             data={demoData}
             colorScheme="dark"
