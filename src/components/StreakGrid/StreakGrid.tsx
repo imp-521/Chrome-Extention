@@ -1,6 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { MdDragIndicator } from "react-icons/md";
 import { ActivityCalendar } from "react-activity-calendar";
+import {
+  ACTIVITY_UPDATED_EVENT,
+  dateKeyOf,
+  getActivityMap,
+} from "@/src/utils/activityStore";
 
 type ActivityDay = {
   date: string;
@@ -8,20 +13,40 @@ type ActivityDay = {
   level: number;
 };
 
-const demoData = Array.from({ length: 365 }, (_, index) => {
-  const date = new Date();
-  date.setUTCDate(date.getUTCDate() - (364 - index));
+const toActivityDays = (map: Record<string, number>): ActivityDay[] => {
+  const today = new Date();
 
-  const count = Math.floor(Math.random() * 5);
+  const start = new Date(today);
 
-  return {
-    date: date.toISOString().slice(0, 10),
-    count,
-    level: count,
-  };
-});
+  start.setUTCDate(start.getUTCDate() - 364);
+
+  const data: ActivityDay[] = [];
+
+  const cursor = new Date(start);
+
+  while (cursor <= today) {
+    const date = dateKeyOf(cursor);
+
+    const raw = Number(map[date]);
+
+    const count = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+
+    data.push({
+      date,
+      count,
+      level: Math.min(count, 4),
+    });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  return data;
+};
 
 const computeStats = (data: ActivityDay[]) => {
+  if (data.length === 0) {
+    return { totalActiveDays: 0, maxStreak: 0, currentStreak: 0 };
+  }
+
   let totalActiveDays = 0;
   let maxStreak = 0;
   let currentRun = 0;
@@ -50,12 +75,37 @@ const computeStats = (data: ActivityDay[]) => {
 
   return { totalActiveDays, maxStreak, currentStreak };
 };
-const { totalActiveDays, maxStreak, currentStreak } = computeStats(demoData);
+
 const StreakGrid = () => {
-  const [activityMap, setActivityMap] = React.useState<Record<
-    string,
-    number
-  > | null>(null);
+  const [activityMap, setActivityMap] = useState<Record<string, number> | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const loadActivity = async () => {
+      const data = await getActivityMap();
+      setActivityMap(data);
+    };
+
+    loadActivity();
+  }, []);
+
+  useEffect(() => {
+    const handleActivityUpdate = async () => {
+      const data = await getActivityMap();
+      setActivityMap(data);
+    };
+
+    window.addEventListener(ACTIVITY_UPDATED_EVENT, handleActivityUpdate);
+
+    return () => {
+      window.removeEventListener(ACTIVITY_UPDATED_EVENT, handleActivityUpdate);
+    };
+  }, []);
+
+  const activityData = activityMap ? toActivityDays(activityMap) : [];
+  const stats = computeStats(activityData);
+
   return (
     <div className="figma-glass-static rounded-[26px] px-4 py-2.5 text-white font-gilroy-medium w-full h-full flex flex-col shadow-2xl relative">
       {/* Header */}
@@ -70,31 +120,33 @@ const StreakGrid = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-xs select-none">
             <span>Active Days:</span>
-            <span>{totalActiveDays}</span>
+            <span>{stats.totalActiveDays}</span>
           </div>
 
           <div className="flex items-center gap-1 text-xs select-none">
             <span>Current Streak:</span>
-            <span>{currentStreak}</span>
+            <span>{stats.currentStreak}</span>
           </div>
 
           <div className="flex items-center gap-1 text-xs select-none">
             <span>Max Streak:</span>
-            <span>{maxStreak}</span>
+            <span>{stats.maxStreak}</span>
           </div>
         </div>
       </div>
 
       <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-x-auto scrollbar-hide z-10 relative pt-1.5">
         <span className="text-white/40 text-xs select-none">
-          <ActivityCalendar
-            data={demoData}
-            colorScheme="dark"
-            blockSize={12}
-            blockMargin={4}
-            blockRadius={3}
-            fontSize={11}
-          />
+          {activityData.length > 0 && (
+            <ActivityCalendar
+              data={activityData}
+              colorScheme="dark"
+              blockSize={12}
+              blockMargin={4}
+              blockRadius={3}
+              fontSize={11}
+            />
+          )}
         </span>
       </div>
     </div>

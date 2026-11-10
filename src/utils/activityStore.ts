@@ -35,3 +35,35 @@ const saveActivityMap = (map: Record<string, number>) => storageSet(STORAGE_KEY,
 const notifyUpdated = () => {
   window.dispatchEvent(new Event(ACTIVITY_UPDATED_EVENT));
 };
+
+
+export const recordActivity = async (points : number = 1) => {
+  const add = Math.max(0, Math.floor(points));
+
+  if (add <= 0) return;
+
+  const map = await getActivityMap();
+  const key = todayUtcKey();
+  const current = Number(map[key]);
+  map[key] = (Number.isFinite(current) && current > 0 ? current : 0) + add;
+  await saveActivityMap(map);
+
+  notifyUpdated();
+};
+
+export const removeActivity = async (points = 1) => {
+  const remove = Math.max(0, Math.floor(points));
+
+  if (remove <= 0) return;
+
+  const map = await getActivityMap();
+  const key = todayUtcKey();
+  const current = Number(map[key]);
+
+  if (!Number.isFinite(current) || current <= 0) return;
+
+  map[key] = Math.max(0, current - remove);
+
+  await saveActivityMap(map);
+  notifyUpdated();
+};

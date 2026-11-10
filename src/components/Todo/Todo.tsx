@@ -6,6 +6,7 @@ import {
   RiCheckboxBlankCircleLine,
   RiCloseLine,
 } from "react-icons/ri";
+import { recordActivity, removeActivity } from "@/src/utils/activityStore";
 
 type Task = {
   id: string;
@@ -13,6 +14,17 @@ type Task = {
   done: boolean;
 };
 const STORAGE_KEY = "todo_items_v2";
+
+const getTodayKey = () => {
+  const today = new Date();
+
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
 const makeId = () => {
   if (
     typeof crypto !== "undefined" &&
@@ -36,7 +48,7 @@ const Todo = () => {
       done: false,
     },
   ]);
-  
+
   // getting data from storage
   useEffect(() => {
     const loadTasks = async () => {
@@ -55,15 +67,28 @@ const Todo = () => {
   // saving data in the storage
   useEffect(() => {
     if (!isHydratedRef.current) return;
-    storageSet(STORAGE_KEY, tasks);
+    storageSet(STORAGE_KEY, {
+      date: getTodayKey(),
+      tasks: tasks,
+    });
   }, [tasks]);
 
   const toggleDone = (id: string) => {
+    const selectedTask = tasks.find((task) => task.id === id);
+
+    if (!selectedTask) return;
+
+    const nextDone = !selectedTask.done;
+
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, done: !task.done } : task,
-      ),
+      prev.map((task) => (task.id === id ? { ...task, done: nextDone } : task)),
     );
+
+    if (nextDone) {
+      recordActivity(1);
+    } else {
+      removeActivity(1);
+    }
   };
 
   const removeTask = (id: string) => {
