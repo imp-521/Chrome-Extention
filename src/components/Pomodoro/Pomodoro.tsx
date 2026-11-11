@@ -61,8 +61,8 @@ const Pomodoro = () => {
     <div className="figma-glass-static relative flex h-full w-full flex-col justify-between overflow-hidden rounded-[26px] px-[20px] py-[13px] text-white select-none">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-white/70 text-xs tracking-wide flex items-center justify-center gap-1">
-            <MdDragIndicator className="text-lg cursor-grab text-white/70" />
+          <span className="text-white/70 text-xs tracking-wide cursor-grab flex items-center justify-center gap-1.5">
+            <MdDragIndicator className="text-lg text-white/70" />
             {mode === "focus" ? "Focus" : "Rest"}
           </span>
         </div>

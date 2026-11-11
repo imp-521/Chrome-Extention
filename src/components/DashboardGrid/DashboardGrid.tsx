@@ -5,6 +5,7 @@ import WaterReminder from "../WaterReminder/WaterReminder";
 import SongPlayer from "../SongPlayer/SongPlayer";
 import Todo from "../Todo/Todo";
 import StreakGrid from "../StreakGrid/StreakGrid";
+import ImportantTabs from "../ImportantTabs/ImportantTabs";
 
 type WidgetId =
   | "timer"
@@ -238,7 +239,8 @@ const widgetsComponents: Partial<Record<WidgetId, React.ComponentType>> = {
   waterReminder : WaterReminder,
   songPlayer : SongPlayer,
   todo : Todo,
-  streakGrid : StreakGrid
+  streakGrid : StreakGrid,
+  importantTabs : ImportantTabs
 };
 
 // this is a fucntion that we use it  for finding out that the device is desktop or laptop

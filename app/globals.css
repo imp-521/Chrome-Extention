@@ -70,3 +70,21 @@ body {
 
   scrollbar-width: none;
 }
+
+.range-dropdown {
+  position: relative;
+  border-radius: 9999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.03) 100%
+  ),
+  color-mix(in srgb, var(--theme, #5c5c5c) 25%, transparent);
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 1px solid transparent;
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  box-shadow: none;
+}

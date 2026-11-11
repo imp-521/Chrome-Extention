@@ -42,27 +42,26 @@ const Todo = () => {
   const [newText, setNewText] = useState("");
   const isHydratedRef = useRef(false);
   const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "task-1",
-      text: "Finish the project",
-      done: false,
-    },
+    
   ]);
 
   // getting data from storage
   useEffect(() => {
-    const loadTasks = async () => {
-      const savedTasks = await storageGet(STORAGE_KEY);
+  const loadTasks = async () => {
+    const savedData = await storageGet(STORAGE_KEY);
 
-      if (Array.isArray(savedTasks)) {
-        setTasks(savedTasks);
-      }
+    if (
+      savedData?.date === getTodayKey() &&
+      Array.isArray(savedData.tasks)
+    ) {
+      setTasks(savedData.tasks);
+    }
 
-      isHydratedRef.current = true;
-    };
+    isHydratedRef.current = true;
+  };
 
-    loadTasks();
-  }, []);
+  loadTasks();
+}, []);
 
   // saving data in the storage
   useEffect(() => {
@@ -135,7 +134,7 @@ const Todo = () => {
     <div className="w-full h-full figma-glass-static group/widget rounded-[26px] p-4 text-white flex flex-col">
       {/* Header */}
 
-      <div className="flex items-center justify-start gap-1 mb-3">
+      <div className="flex items-center justify-start gap-1.5 mb-3">
         <span>
           <MdDragIndicator className="text-lg cursor-grab text-white/70" />
         </span>

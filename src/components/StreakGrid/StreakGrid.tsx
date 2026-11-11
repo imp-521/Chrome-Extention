@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MdDragIndicator } from "react-icons/md";
 import { ActivityCalendar } from "react-activity-calendar";
 import {
@@ -6,6 +6,7 @@ import {
   dateKeyOf,
   getActivityMap,
 } from "@/src/utils/activityStore";
+import { IoCheckmark, IoChevronDown } from "react-icons/io5";
 
 type ActivityDay = {
   date: string;
@@ -13,18 +14,36 @@ type ActivityDay = {
   level: number;
 };
 
-const toActivityDays = (map: Record<string, number>): ActivityDay[] => {
+const getRangeDates = (rangeId: string) => {
   const today = new Date();
 
-  const start = new Date(today);
+  if (rangeId === "year") {
+    return {
+      start: new Date(Date.UTC(today.getUTCFullYear(), 0, 1)),
+      end: new Date(Date.UTC(today.getUTCFullYear(), 11, 31)),
+    };
+  }
 
+  const start = new Date(today);
   start.setUTCDate(start.getUTCDate() - 364);
+
+  return {
+    start,
+    end: today,
+  };
+};
+
+const toActivityDays = (
+  map: Record<string, number>,
+  rangeId: string,
+): ActivityDay[] => {
+  const { start, end } = getRangeDates(rangeId);
 
   const data: ActivityDay[] = [];
 
   const cursor = new Date(start);
 
-  while (cursor <= today) {
+  while (cursor <= end) {
     const date = dateKeyOf(cursor);
 
     const raw = Number(map[date]);
@@ -77,6 +96,9 @@ const computeStats = (data: ActivityDay[]) => {
 };
 
 const StreakGrid = () => {
+  const [range, setRange] = useState("current");
+  const [rangeMenuOpen, setRangeMenuOpen] = useState(false);
+  const rangeMenuRef = useRef<HTMLDivElement>(null);
   const [activityMap, setActivityMap] = useState<Record<string, number> | null>(
     null,
   );
@@ -103,7 +125,24 @@ const StreakGrid = () => {
     };
   }, []);
 
-  const activityData = activityMap ? toActivityDays(activityMap) : [];
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        rangeMenuRef.current &&
+        !rangeMenuRef.current.contains(event.target as Node)
+      ) {
+        setRangeMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const activityData = activityMap ? toActivityDays(activityMap, range) : [];
   const stats = computeStats(activityData);
 
   return (
@@ -111,8 +150,8 @@ const StreakGrid = () => {
       {/* Header */}
       <div className="w-full flex items-center justify-between">
         {/* Title */}
-        <div className="flex items-center gap-1.5 text-white/70 text-xs">
-          <MdDragIndicator className="text-lg cursor-grab text-white/70" />
+        <div className="flex items-center gap-1.5 text-white/70 cursor-grab text-xs">
+          <MdDragIndicator className="text-lg text-white/70" />
           <span className="select-none">Streak Grid View</span>
         </div>
 
@@ -132,10 +171,61 @@ const StreakGrid = () => {
             <span>Max Streak:</span>
             <span>{stats.maxStreak}</span>
           </div>
+
+          <div className="relative" ref={rangeMenuRef}>
+            <button
+              type="button"
+              onClick={() => setRangeMenuOpen((prev) => !prev)}
+              className="range-dropdown h-7 px-3.5 rounded-full flex items-center gap-1.5 text-xs font-gilroy-medium text-white/90 hover:text-white transition-all cursor-pointer"
+            >
+              <span>{range === "current" ? "Current" : "This Year"}</span>
+
+              <IoChevronDown
+                className={`text-xs transition-transform ${
+                  rangeMenuOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {rangeMenuOpen && (
+              <div className="absolute right-0 top-full mt-1.5 min-w-[110px] bg-black/90 backdrop-blur-xl border border-white/20 rounded-xl p-1 shadow-2xl z-50 flex flex-col gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRange("current");
+                    setRangeMenuOpen(false);
+                  }}
+                  className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[11px] transition-colors cursor-pointer ${
+                    range === "current"
+                      ? "bg-white/15 text-white"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <span>Current</span>
+                  {range === "current" && <IoCheckmark className="text-xs" />}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRange("year");
+                    setRangeMenuOpen(false);
+                  }}
+                  className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[11px] transition-colors cursor-pointer ${
+                    range === "year"
+                      ? "bg-white/15 text-white"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <span>This Year</span>
+                  {range === "year" && <IoCheckmark className="text-xs" />}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-x-auto scrollbar-hide z-10 relative pt-1.5">
+      <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-x-auto scrollbar-hide z-10 relative pt-5">
         <span className="text-white/40 text-xs select-none">
           {activityData.length > 0 && (
             <ActivityCalendar

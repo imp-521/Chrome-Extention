@@ -25,14 +25,14 @@ const stations = [
     badge: "24/7 Lofi Hip Hop",
     gradient: "from-purple-900/60 via-indigo-900/50 to-slate-900/70",
   },
-  // {
-  //   id: "chillhop-beats",
-  //   name: "Chillhop Radio & Lofi Beats",
-  //   provider: "Flux FM Stream",
-  //   streamUrl: "https://streams.fluxfm.de/chillhop/mp3-320/stream.fluxfm.de/",
-  //   badge: "Chillhop Beats",
-  //   gradient: "from-amber-900/60 via-orange-950/50 to-slate-950/70",
-  // },
+  {
+    id: "chillhop-beats",
+    name: "Chillhop Radio & Lofi Beats",
+    provider: "Flux FM Stream",
+    streamUrl: "https://streams.fluxfm.de/chillhop/mp3-320/stream.fluxfm.de/",
+    badge: "Chillhop Beats",
+    gradient: "from-amber-900/60 via-orange-950/50 to-slate-950/70",
+  },
   {
     id: "ambient-sleep-lofi",
     name: "Cozy Ambient Rain Lofi",
@@ -122,8 +122,8 @@ const SongPlayer = () => {
       {/* header */}
       <div className="w-full flex items-center justify-between relative z-10 mb-3">
         {/* left */}
-        <div className="flex items-center gap-2" data-drag-handle>
-          <MdDragIndicator className="text-white/50 text-xl cursor-grab" />
+        <div className="flex items-center gap-1.5 cursor-grab"  data-drag-handle>
+          <MdDragIndicator className="text-white/50 text-xl " />
           <div className="flex flex-col">
             <span className="text-sm font-semibold tracking-wide">
               Lofi Radio
