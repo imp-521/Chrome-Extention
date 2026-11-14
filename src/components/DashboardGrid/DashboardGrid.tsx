@@ -6,6 +6,7 @@ import SongPlayer from "../SongPlayer/SongPlayer";
 import Todo from "../Todo/Todo";
 import StreakGrid from "../StreakGrid/StreakGrid";
 import ImportantTabs from "../ImportantTabs/ImportantTabs";
+import TimeBoxing from "../TimeBoxing/TimeBoxing";
 
 type WidgetId =
   | "timer"
@@ -240,7 +241,8 @@ const widgetsComponents: Partial<Record<WidgetId, React.ComponentType>> = {
   songPlayer : SongPlayer,
   todo : Todo,
   streakGrid : StreakGrid,
-  importantTabs : ImportantTabs
+  importantTabs : ImportantTabs,
+  timeBoxing : TimeBoxing,
 };
 
 // this is a fucntion that we use it  for finding out that the device is desktop or laptop
