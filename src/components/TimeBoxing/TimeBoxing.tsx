@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { IconType } from "react-icons";
 import { MdDragIndicator } from "react-icons/md";
 import { RiAddLine, RiArrowDownSLine, RiCodeSSlashLine } from "react-icons/ri";
@@ -8,6 +8,7 @@ import {
   RiCheckboxBlankCircleLine,
   RiFireFill,
 } from "react-icons/ri";
+import TimePicker from "../TimePicker/TimePicker";
 
 type Subtask = {
   id: number;
@@ -88,6 +89,14 @@ const TimeBoxing = () => {
   const [newSubtasks, setNewSubtasks] = useState<Subtask[]>([]);
   const [newStartTime, setNewStartTime] = useState("09:00");
   const [newEndTime, setNewEndTime] = useState("11:00");
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+  const [startTime, setStartTime] = useState("09:00 AM");
+  const [endTime, setEndTime] = useState("11:00 AM");
+  const [activeTimeField, setActiveTimeField] = useState<"start" | "end">(
+    "start",
+  );
+  const startTimeRef = useRef<HTMLButtonElement>(null);
+  const endTimeRef = useRef<HTMLButtonElement>(null);
 
   const toggleSubtask = (blockId: number, subtaskId: number) => {
     setBlocks((prevBlocks) =>
@@ -330,13 +339,18 @@ const TimeBoxing = () => {
               />
 
               {/* Time Picker */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 relative">
                 {/* Start Time */}
                 <button
+                  ref={startTimeRef}
                   type="button"
+                  onClick={() => {
+                    setActiveTimeField("start");
+                    setIsTimePickerOpen(true);
+                  }}
                   className="flex-1 flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 hover:bg-white/10 transition-colors"
                 >
-                  <span className="text-xs text-white/80">09:00 AM</span>
+                  <span className="text-xs text-white/80">{startTime}</span>
                   <RiArrowDownSLine className="text-white/50 text-base" />
                 </button>
 
@@ -344,12 +358,39 @@ const TimeBoxing = () => {
 
                 {/* End Time */}
                 <button
+                  ref={endTimeRef}
                   type="button"
+                  onClick={() => {
+                    setActiveTimeField("end");
+                    setIsTimePickerOpen(true);
+                  }}
                   className="flex-1 flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 hover:bg-white/10 transition-colors"
                 >
-                  <span className="text-xs text-white/80">11:00 AM</span>
+                  <span className="text-xs text-white/80">{endTime}</span>
                   <RiArrowDownSLine className="text-white/50 text-base" />
                 </button>
+
+                {/* Time Picker Popover */}
+                {isTimePickerOpen && (
+                  <div className="absolute top-full right-0 z-50 mt-2">
+                    <TimePicker
+                      current={
+                        activeTimeField === "start" ? startTime : endTime
+                      }
+                      onSelect={(time) => {
+                        if (activeTimeField === "start") {
+                          setStartTime(time);
+                        } else {
+                          setEndTime(time);
+                        }
+                      }}
+                      onClose={() => setIsTimePickerOpen(false)}
+                      triggerRef={
+                        activeTimeField === "start" ? startTimeRef : endTimeRef
+                      }
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Subtask */}
