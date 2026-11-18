@@ -36,35 +36,7 @@ type ColorStyle = {
 
 type ColorName = "amber" | "blue";
 
-const INITIAL_BLOCKS: TimeBlock[] = [
-  {
-    id: 1,
-    title: "Morning Routine",
-    icon: RiSunLine,
-    startTime: "09:00",
-    endTime: "11:00",
-    color: "amber",
-    streak: 2,
-    subtasks: [
-      { id: 1, title: "Check emails", done: true },
-      { id: 2, title: "Plan the day", done: false },
-      { id: 3, title: "Review priorities", done: false },
-    ],
-  },
-  {
-    id: 2,
-    title: "Deep Work",
-    icon: RiCodeSSlashLine,
-    startTime: "11:00",
-    endTime: "13:00",
-    color: "blue",
-    streak: 0,
-    subtasks: [
-      { id: 1, title: "Work on main project", done: false },
-      { id: 2, title: "Review code", done: false },
-    ],
-  },
-];
+const INITIAL_BLOCKS: TimeBlock[] = [];
 
 const COLOR_STYLES: Record<ColorName, ColorStyle> = {
   amber: {
@@ -97,6 +69,10 @@ const TimeBoxing = () => {
   );
   const startTimeRef = useRef<HTMLButtonElement>(null);
   const endTimeRef = useRef<HTMLButtonElement>(null);
+  const [isSubtaskInvalid, setIsSubtaskInvalid] = useState(false);
+  const [shakeSubtaskInput, setShakeSubtaskInput] = useState(false);
+  const [isTaskTitleInvalid, setIsTaskTitleInvalid] = useState(false);
+  const [shakeTaskTitleInput, setShakeTaskTitleInput] = useState(false);
 
   const toggleSubtask = (blockId: number, subtaskId: number) => {
     setBlocks((prevBlocks) =>
@@ -120,7 +96,26 @@ const TimeBoxing = () => {
   };
 
   const handleSaveTask = () => {
-    if (!newTaskTitle.trim()) return;
+    if (!newTaskTitle.trim()) {
+      setIsTaskTitleInvalid(true);
+      setShakeTaskTitleInput(false);
+
+      requestAnimationFrame(() => {
+        setShakeTaskTitleInput(true);
+      });
+
+      return;
+    }
+
+    if (newSubtasks.length === 0) {
+      setIsSubtaskInvalid(true);
+      setShakeSubtaskInput(false);
+
+      requestAnimationFrame(() => {
+        setShakeSubtaskInput(true);
+      });
+      return;
+    }
 
     const newBlock: TimeBlock = {
       id: Date.now(),
@@ -137,6 +132,8 @@ const TimeBoxing = () => {
     setBlocks((prevBlocks) => [...prevBlocks, newBlock]);
     setExpandedId(newBlock.id);
     setNewSubtasks([]);
+    setIsSubtaskInvalid(false);
+    setShakeSubtaskInput(false);
   };
 
   const handleAddSubtask = () => {
@@ -211,10 +208,12 @@ const TimeBoxing = () => {
                   className={`flex-1 min-w-0 rounded-[18px] border px-4 pt-3.5 pb-4 shadow-lg ${colors.card}`}
                 >
                   {/* Card Header */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between mb-3 gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <Icon className={`${colors.icon} text-lg`} />
-                      <span className="text-sm text-white">{block.title}</span>
+                      <span className="text-sm text-white truncate">
+                        {block.title}
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -227,7 +226,7 @@ const TimeBoxing = () => {
                         className="text-white/50 hover:text-white transition-transform"
                       >
                         <RiArrowDownSLine
-                          className={`text-base transition-transform ${
+                          className={`text-base transition-transform  duration-300 ease-in-out ${
                             expandedId === block.id ? "rotate-180" : ""
                           }`}
                         />
@@ -335,7 +334,11 @@ const TimeBoxing = () => {
                 onChange={(e) => setNewTaskTitle(e.target.value)}
                 type="text"
                 placeholder="Enter task title..."
-                className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/35 outline-none focus:border-white/30 mb-3"
+                className={`w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/35 outline-none focus:border-white/30 mb-3 ${
+                  isTaskTitleInvalid
+                    ? "border-red-300"
+                    : "border-white/10 focus:border-white/30"
+                } ${shakeTaskTitleInput ? "animate-shake" : ""}`}
               />
 
               {/* Time Picker */}
@@ -372,7 +375,7 @@ const TimeBoxing = () => {
 
                 {/* Time Picker Popover */}
                 {isTimePickerOpen && (
-                  <div className="absolute top-full right-0 z-50 mt-2">
+                  <div className="relative">
                     <TimePicker
                       current={
                         activeTimeField === "start" ? startTime : endTime
@@ -400,7 +403,11 @@ const TimeBoxing = () => {
                   onChange={(e) => setNewSubtaskTitle(e.target.value)}
                   type="text"
                   placeholder="Add a subtask..."
-                  className="flex-1 min-w-0 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/35 outline-none focus:border-white/30"
+                  className={`flex-1 min-w-0 bg-white/[0.06] border rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/35 outline-none transition-colors duration-200 ${
+                    isSubtaskInvalid
+                      ? "border-red-300"
+                      : "border-white/10 focus:border-white/30"
+                  } ${shakeSubtaskInput ? "animate-shake" : ""}`}
                 />
 
                 <button

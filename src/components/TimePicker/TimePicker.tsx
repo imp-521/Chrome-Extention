@@ -18,9 +18,12 @@ const hours = Array.from({ length: 12 }, (_, i) => i + 1);
 const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
 const periods = ["AM", "PM"];
 
-
-
-const TimePicker = ({ current, onSelect, onClose ,triggerRef }: TimePickerProps) => {
+const TimePicker = ({
+  current,
+  onSelect,
+  onClose,
+  triggerRef,
+}: TimePickerProps) => {
   const parseInit = (tStr: string): TimeState => {
     const match = /^(\d{1,2}):(\d{2})\s*([ap]m)$/i.exec(
       String(tStr || "").trim(),
@@ -45,6 +48,7 @@ const TimePicker = ({ current, onSelect, onClose ,triggerRef }: TimePickerProps)
       period: "AM",
     };
   };
+
   const [timeState, setTimeState] = useState<TimeState>(() =>
     parseInit(current),
   );
@@ -59,40 +63,62 @@ const TimePicker = ({ current, onSelect, onClose ,triggerRef }: TimePickerProps)
   };
 
   useEffect(() => {
-  const trigger = triggerRef.current;
-  const popover = popoverRef.current;
+    const trigger = triggerRef.current;
+    const popover = popoverRef.current;
 
-  if (!trigger || !popover) return;
+    if (!trigger || !popover) return;
 
-  const triggerRect = trigger.getBoundingClientRect();
-  const popoverRect = popover.getBoundingClientRect();
-  console.log(triggerRect);
+    const triggerRect = trigger.getBoundingClientRect();
+    const popoverRect = popover.getBoundingClientRect();
+
+    const spaceBelow = window.innerHeight - triggerRect.bottom;
+    const spaceAbove = triggerRect.top;
+
+    setOpenUpwards(spaceBelow < popoverRect.height && spaceAbove > spaceBelow);
+  }, [triggerRef]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(target) &&
+        !triggerRef.current?.contains(target)
+      ) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose, triggerRef]);
   
-  const spaceBelow = window.innerHeight - triggerRect.bottom;
-  const spaceAbove = triggerRect.top;
-
-  setOpenUpwards(
-    spaceBelow < popoverRect.height && spaceAbove > spaceBelow
-  );
-}, [triggerRef]);
-
   return (
-    <div ref={popoverRef} className="bg-[#1e1e2e] border border-white/10 rounded-xl p-4 shadow-xl w-64">
+    <div
+      ref={popoverRef}
+      className={`absolute right-0 z-50 w-56 rounded-xl border border-white/10 bg-[#1e1e2e] p-3 shadow-xl ${
+        openUpwards ? "bottom-full mb-2" : "top-full mt-2"
+      }`}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-medium text-white">Select Time</span>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-white">Select Time</span>
 
         <button
           type="button"
           onClick={onClose}
-          className="w-6 h-6 flex items-center justify-center rounded-md text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          className="w-5 h-5 flex items-center justify-center rounded-md text-white/50 hover:text-white hover:bg-white/10 transition-colors"
         >
-          <RiCloseLine className="text-lg" />
+          <RiCloseLine className="text-base" />
         </button>
       </div>
 
       {/* Time Selectors */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-3 gap-1.5 mb-3">
         {/* Hour */}
         <select
           value={timeState.hour}
@@ -102,7 +128,7 @@ const TimePicker = ({ current, onSelect, onClose ,triggerRef }: TimePickerProps)
               hour: Number(e.target.value),
             }))
           }
-          className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-2 py-2 text-xs text-white outline-none cursor-pointer"
+          className="w-full bg-white/[0.06] border border-white/10 rounded-md px-1.5 py-1.5 text-[11px] text-white outline-none cursor-pointer"
         >
           {hours.map((hour) => (
             <option className="bg-[#1e1e2e] text-white" key={hour} value={hour}>
@@ -120,7 +146,7 @@ const TimePicker = ({ current, onSelect, onClose ,triggerRef }: TimePickerProps)
               minute: Number(e.target.value),
             }))
           }
-          className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-2 py-2 text-xs text-white outline-none cursor-pointer"
+          className="w-full bg-white/[0.06] border border-white/10 rounded-md px-1.5 py-1.5 text-[11px] text-white outline-none cursor-pointer"
         >
           {minutes.map((minute) => (
             <option
@@ -142,7 +168,7 @@ const TimePicker = ({ current, onSelect, onClose ,triggerRef }: TimePickerProps)
               period: e.target.value as "AM" | "PM",
             }))
           }
-          className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-2 py-2 text-xs text-white outline-none cursor-pointer"
+          className="w-full bg-white/[0.06] border border-white/10 rounded-md px-1.5 py-1.5 text-[11px] text-white outline-none cursor-pointer"
         >
           {periods.map((period) => (
             <option
@@ -160,7 +186,7 @@ const TimePicker = ({ current, onSelect, onClose ,triggerRef }: TimePickerProps)
       <button
         type="button"
         onClick={handleApply}
-        className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg py-2 transition-colors"
+        className="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-md py-1.5 transition-colors"
       >
         Apply
       </button>
