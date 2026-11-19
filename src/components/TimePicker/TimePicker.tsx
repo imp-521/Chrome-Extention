@@ -56,7 +56,7 @@ const TimePicker = ({
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const handleApply = () => {
-    const formatted = `${timeState.hour}:${String(timeState.minute).padStart(2, "0")} ${timeState.period.toLowerCase()}`;
+    const formatted = `${timeState.hour}:${String(timeState.minute).padStart(2, "0")} ${timeState.period.toUpperCase()}`;
 
     onSelect(formatted);
     onClose();
@@ -96,7 +96,7 @@ const TimePicker = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [onClose, triggerRef]);
-  
+
   return (
     <div
       ref={popoverRef}
