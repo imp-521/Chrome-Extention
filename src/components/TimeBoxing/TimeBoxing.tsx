@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { IconType } from "react-icons";
 import { MdDragIndicator } from "react-icons/md";
-import { RiAddLine, RiArrowDownSLine, RiCodeSSlashLine } from "react-icons/ri";
+import { RiAddLine, RiArrowDownSLine } from "react-icons/ri";
 import {
   RiSunLine,
   RiCheckboxCircleFill,
@@ -21,7 +21,7 @@ type Subtask = {
 type TimeBlock = {
   id: number;
   title: string;
-  icon: "sun";
+  icon: string;
   startTime: string;
   endTime: string;
   color: ColorName;
@@ -73,14 +73,22 @@ const TimeBoxing = () => {
   const [shakeSubtaskInput, setShakeSubtaskInput] = useState(false);
   const [shakeTaskTitleInput, setShakeTaskTitleInput] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
+  const [selectedIcon, setSelectedIcon] = useState("");
+  const today = new Date().toLocaleDateString("en-CA");
 
   useEffect(() => {
     const loadBlocks = async () => {
-      const savedBlocks = await storageGet("timeBlocks");
+      const savedDate = await storageGet("timeBlocksDate");
 
-      if (savedBlocks) {
-        setBlocks(savedBlocks);
+      if (savedDate === today) {
+        const savedBlocks = await storageGet("timeBlocks");
+
+        if (savedBlocks) {
+          setBlocks(savedBlocks);
+        }
       }
+
       setIsLoaded(true);
     };
 
@@ -91,6 +99,7 @@ const TimeBoxing = () => {
     if (!isLoaded) return;
 
     storageSet("timeBlocks", blocks);
+    storageSet("timeBlocksDate", today);
   }, [blocks, isLoaded]);
 
   useEffect(() => {
@@ -161,7 +170,7 @@ const TimeBoxing = () => {
     const newBlock: TimeBlock = {
       id: Date.now(),
       title: newTaskTitle.trim(),
-      icon: "sun",
+      icon: selectedIcon || "☀️",
       startTime: convertTo24Hour(startTime),
       endTime: convertTo24Hour(endTime),
       color: "amber",
@@ -169,6 +178,7 @@ const TimeBoxing = () => {
       subtasks: newSubtasks,
     };
     setNewTaskTitle("");
+    setSelectedIcon("");
     setIsFormOpen(false);
     setBlocks((prevBlocks) => [...prevBlocks, newBlock]);
     setExpandedId(newBlock.id);
@@ -221,139 +231,146 @@ const TimeBoxing = () => {
         <div className="flex flex-col gap-2 relative">
           <div className="absolute left-[5px] top-1 bottom-1 w-px bg-white/15 pointer-events-none" />
 
-          {blocks.map((block) => {
-            const Icon = ICONS[block.icon];
-            const colors = COLOR_STYLES[block.color];
-            const completedCount = block.subtasks.filter(
-              (subtask) => subtask.done,
-            ).length;
+          {[...blocks]
+            .sort((a, b) => a.startTime.localeCompare(b.startTime))
+            .map((block) => {
+              const hour = Number(block.startTime.split(":")[0]);
+              const isNight = hour >= 18 || hour < 6;
+              const colors = COLOR_STYLES[block.color];
+              const completedCount = block.subtasks.filter(
+                (subtask) => subtask.done,
+              ).length;
 
-            const totalCount = block.subtasks.length;
-            const progress =
-              totalCount > 0
-                ? Math.round((completedCount / totalCount) * 100)
-                : 0;
-            return (
-              <div
-                key={block.id}
-                className="group/subtask relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all"
-              >
-                <span className="absolute left-[6px] top-1/2 w-[17px] h-px bg-white/20" />
-                {/* Timeline */}
-                <div className="w-[70px] shrink-0 relative">
-                  <div className="relative flex items-center gap-2">
-                    <div
-                      className={`relative z-10 w-[11px] h-[11px] rounded-full ${colors.dot} border-2 border-white/20`}
-                    />
-                    <span className="text-[10px] text-white/50">
-                      {block.startTime}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Task Card */}
+              const totalCount = block.subtasks.length;
+              const progress =
+                totalCount > 0
+                  ? Math.round((completedCount / totalCount) * 100)
+                  : 0;
+              return (
                 <div
-                  className={`flex-1 min-w-0 rounded-[18px] border px-4 pt-3.5 pb-4 shadow-lg ${colors.card}`}
+                  key={block.id}
+                  className="group/subtask relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all"
                 >
-                  {/* Card Header */}
-                  <div className="flex items-center justify-between mb-3 gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Icon className={`${colors.icon} text-lg`} />
-                      <span className="text-sm text-white truncate">
-                        {block.title}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <span className="text-[10px] text-white/50 whitespace-nowrap">
-                        {block.startTime} - {block.endTime}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => toggleExpand(block.id)}
-                        className="text-white/50 hover:text-white transition-transform"
-                      >
-                        <RiArrowDownSLine
-                          className={`text-base transition-transform  duration-300 ease-in-out ${
-                            expandedId === block.id ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Progress */}
-                  <div className="flex items-center gap-2 mb-3">
-                    {progress === 100 ? (
-                      <RiCheckboxCircleFill className="text-green-400 text-sm" />
-                    ) : (
-                      <RiCheckboxBlankCircleLine className="text-white/50 text-sm" />
-                    )}
-
-                    <span className="text-[10px] text-white/60">
-                      {completedCount} of {totalCount}
-                    </span>
-
-                    <div className="flex-1 h-1 rounded-full bg-white/10 overflow-hidden">
+                  <span className="absolute left-[6px] top-1/2 w-[17px] h-px bg-white/20" />
+                  {/* Timeline */}
+                  <div className="w-[70px] shrink-0 relative">
+                    <div className="relative flex items-center gap-2">
                       <div
-                        className={`h-full rounded-full ${colors.progress} transition-all`}
-                        style={{ width: `${progress}%` }}
+                        className={`relative z-10 w-[11px] h-[11px] rounded-full ${
+                          isNight ? "bg-blue-700" : "bg-amber-400"
+                        } border-2 border-white/20`}
                       />
+                      <span className="text-[10px] text-white/50">
+                        {block.startTime}
+                      </span>
                     </div>
-
-                    <span className="text-[10px] text-white/60">
-                      {progress}%
-                    </span>
-
-                    <RiFireFill className="text-orange-400 text-sm" />
-                    <span className="text-[10px] text-white/60">
-                      {block.streak}
-                    </span>
                   </div>
 
-                  {/* Subtasks */}
-                  {expandedId === block.id && (
-                    <div className="relative mt-1.5">
-                      {block.subtasks.map((subtask, subIndex) => {
-                        const isLastSubtask =
-                          subIndex === block.subtasks.length - 1;
-                        return (
-                          <div
-                            key={subtask.id}
-                            onClick={() => toggleSubtask(block.id, subtask.id)}
-                            className="relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all"
-                          >
-                            <span
-                              className={`absolute left-[6px] top-0 w-px bg-white/20 ${
-                                isLastSubtask ? "h-1/2" : "bottom-0"
-                              }`}
-                            />
+                  {/* Task Card */}
+                  <div
+                    className={`flex-1 min-w-0 rounded-[18px] border px-4 pt-3.5 pb-4 shadow-lg ${colors.card}`}
+                  >
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between mb-3 gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-lg">{block.icon}</span>
+                        <span className="text-sm text-white truncate">
+                          {block.title}
+                        </span>
+                      </div>
 
-                            <span className="absolute left-[6px] top-1/2 w-[17px] h-px bg-white/20" />
-                            {subtask.done ? (
-                              <RiCheckboxCircleFill className="text-green-400 text-base shrink-0" />
-                            ) : (
-                              <RiCheckboxBlankCircleLine className="text-white/50 text-base shrink-0" />
-                            )}
-
-                            <span
-                              className={`text-xs ${
-                                subtask.done
-                                  ? "text-white/40 line-through"
-                                  : "text-white/80"
-                              }`}
-                            >
-                              {subtask.title}
-                            </span>
-                          </div>
-                        );
-                      })}
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-white/50 whitespace-nowrap">
+                          {block.startTime} - {block.endTime}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleExpand(block.id)}
+                          className="text-white/50 hover:text-white transition-transform"
+                        >
+                          <RiArrowDownSLine
+                            className={`text-base transition-transform  duration-300 ease-in-out ${
+                              expandedId === block.id ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
-                  )}
+
+                    {/* Progress */}
+                    <div className="flex items-center gap-2 mb-3">
+                      {progress === 100 ? (
+                        <RiCheckboxCircleFill className="text-green-400 text-sm" />
+                      ) : (
+                        <RiCheckboxBlankCircleLine className="text-white/50 text-sm" />
+                      )}
+
+                      <span className="text-[10px] text-white/60">
+                        {completedCount} of {totalCount}
+                      </span>
+
+                      <div className="flex-1 h-1 rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${colors.progress} transition-all`}
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+
+                      <span className="text-[10px] text-white/60">
+                        {progress}%
+                      </span>
+
+                      <RiFireFill className="text-orange-400 text-sm" />
+                      <span className="text-[10px] text-white/60">
+                        {block.streak}
+                      </span>
+                    </div>
+
+                    {/* Subtasks */}
+                    {expandedId === block.id && (
+                      <div className="relative mt-1.5">
+                        {block.subtasks.map((subtask, subIndex) => {
+                          const isLastSubtask =
+                            subIndex === block.subtasks.length - 1;
+                          return (
+                            <div
+                              key={subtask.id}
+                              onClick={() =>
+                                toggleSubtask(block.id, subtask.id)
+                              }
+                              className="relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all"
+                            >
+                              <span
+                                className={`absolute left-[6px] top-0 w-px bg-white/20 ${
+                                  isLastSubtask ? "h-1/2" : "bottom-0"
+                                }`}
+                              />
+
+                              <span className="absolute left-[6px] top-1/2 w-[17px] h-px bg-white/20" />
+                              {subtask.done ? (
+                                <RiCheckboxCircleFill className="text-green-400 text-base shrink-0" />
+                              ) : (
+                                <RiCheckboxBlankCircleLine className="text-white/50 text-base shrink-0" />
+                              )}
+
+                              <span
+                                className={`text-xs ${
+                                  subtask.done
+                                    ? "text-white/40 line-through"
+                                    : "text-white/80"
+                                }`}
+                              >
+                                {subtask.title}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
           {/* Add New Task Form */}
           {isFormOpen && (
             <div
@@ -366,18 +383,25 @@ const TimeBoxing = () => {
               </div>
 
               {/* Icon Picker */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 relative">
                 <button
                   type="button"
+                  onClick={() => setIsIconPickerOpen(true)}
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 border border-white/10 hover:bg-white/15 transition-colors"
                 >
-                  <RiSunLine className="text-amber-300 text-lg" />
+                  {selectedIcon || "☀️"}
                 </button>
 
                 <span className="text-[10px] text-white/50">
                   Choose an icon
                 </span>
-                <IconPicker />
+                {isIconPickerOpen && (
+                  <IconPicker
+                    onSelect={(icon) => setSelectedIcon(icon)}
+                    onClose={() => setIsIconPickerOpen(false)}
+                    selectedIcon={selectedIcon}
+                  />
+                )}
               </div>
 
               {/* Title */}
