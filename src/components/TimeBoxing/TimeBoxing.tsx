@@ -11,6 +11,8 @@ import {
 import TimePicker from "../TimePicker/TimePicker";
 import { storageGet, storageSet } from "@/src/utils/storage";
 import IconPicker from "../IconPicker/IconPicker";
+import { recordActivity, removeActivity } from "@/src/utils/activityStore";
+import { DiVim } from "react-icons/di";
 
 type Subtask = {
   id: number;
@@ -76,6 +78,9 @@ const TimeBoxing = () => {
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState("");
   const today = new Date().toLocaleDateString("en-CA");
+  const [isDuplicateTime, setIsDuplicateTime] = useState(false);
+  const [isInvalidTime, setIsInvalidTime] = useState(false);
+  const [isOverlappingTime, setIsOverlappingTime] = useState(false);
 
   useEffect(() => {
     const loadBlocks = async () => {
@@ -111,21 +116,34 @@ const TimeBoxing = () => {
     }
   }, [isFormOpen]);
 
-  const toggleSubtask = (blockId: number, subtaskId: number) => {
-    setBlocks((prevBlocks) =>
-      prevBlocks.map((block) => {
-        if (block.id !== blockId) return block;
+  const toggleSubtask = async (blockId: number, subtaskId: number) => {
+    const block = blocks.find((item) => item.id === blockId);
 
-        return {
-          ...block,
-          subtasks: block.subtasks.map((subtask) =>
-            subtask.id === subtaskId
-              ? { ...subtask, done: !subtask.done }
-              : subtask,
-          ),
-        };
-      }),
+    if (!block) return;
+
+    const updatedSubtasks = block.subtasks.map((subtask) =>
+      subtask.id === subtaskId ? { ...subtask, done: !subtask.done } : subtask,
     );
+
+    const wasCompleted =
+      block.subtasks.length > 0 &&
+      block.subtasks.every((subtask) => subtask.done);
+
+    const isCompleted =
+      updatedSubtasks.length > 0 &&
+      updatedSubtasks.every((subtask) => subtask.done);
+
+    setBlocks((prevBlocks) =>
+      prevBlocks.map((item) =>
+        item.id === blockId ? { ...item, subtasks: updatedSubtasks } : item,
+      ),
+    );
+
+    if (!wasCompleted && isCompleted) {
+      await recordActivity(1);
+    } else if (wasCompleted && !isCompleted) {
+      await removeActivity(1);
+    }
   };
 
   const toggleExpand = (blockId: number) => {
@@ -166,6 +184,38 @@ const TimeBoxing = () => {
       });
       return;
     }
+
+    const newStartTime = convertTo24Hour(startTime);
+    const newEndTime = convertTo24Hour(endTime);
+
+    const isDuplicate = blocks.some(
+      (block) => block.startTime === newStartTime,
+    );
+
+    if (isDuplicate) {
+      setIsDuplicateTime(true);
+      return;
+    }
+
+    if (newEndTime <= newStartTime) {
+      setIsInvalidTime(true);
+      return;
+    }
+
+    setIsInvalidTime(false);
+
+    setIsDuplicateTime(false);
+
+    const hasOverlap = blocks.some(
+      (block) => newStartTime < block.endTime && newEndTime > block.startTime,
+    );
+
+    if (hasOverlap) {
+      setIsOverlappingTime(true);
+      return;
+    }
+
+    setIsOverlappingTime(false);
 
     const newBlock: TimeBlock = {
       id: Date.now(),
@@ -279,10 +329,11 @@ const TimeBoxing = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-white/50 whitespace-nowrap">
-                          {block.startTime} - {block.endTime}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className="text-[10px] text-white/50 whitespace-nowrap flex flex-col items-cetner">
+                          <span>{block.startTime}</span>
+                          <span> {block.endTime}</span>
+                        </div>
                         <button
                           type="button"
                           onClick={() => toggleExpand(block.id)}
@@ -320,10 +371,10 @@ const TimeBoxing = () => {
                         {progress}%
                       </span>
 
-                      <RiFireFill className="text-orange-400 text-sm" />
+                      {/* <RiFireFill className="text-orange-400 text-sm" />
                       <span className="text-[10px] text-white/60">
                         {block.streak}
-                      </span>
+                      </span> */}
                     </div>
 
                     {/* Subtasks */}
@@ -345,8 +396,8 @@ const TimeBoxing = () => {
                                   isLastSubtask ? "h-1/2" : "bottom-0"
                                 }`}
                               />
-
                               <span className="absolute left-[6px] top-1/2 w-[17px] h-px bg-white/20" />
+
                               {subtask.done ? (
                                 <RiCheckboxCircleFill className="text-green-400 text-base shrink-0" />
                               ) : (
@@ -415,36 +466,38 @@ const TimeBoxing = () => {
               />
 
               {/* Time Picker */}
-              <div className="flex items-center gap-2 mb-3 relative">
+              <div className="flex flex-col items-center gap-2 mb-1 relative">
                 {/* Start Time */}
-                <button
-                  ref={startTimeRef}
-                  type="button"
-                  onClick={() => {
-                    setActiveTimeField("start");
-                    setIsTimePickerOpen(true);
-                  }}
-                  className="flex-1 flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 hover:bg-white/10 transition-colors shrink-0"
-                >
-                  <span className="text-xs text-white/80">{startTime}</span>
-                  <RiArrowDownSLine className="text-white/50 text-base" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    ref={startTimeRef}
+                    type="button"
+                    onClick={() => {
+                      setActiveTimeField("start");
+                      setIsTimePickerOpen(true);
+                    }}
+                    className="flex-1 flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 hover:bg-white/10 transition-colors shrink-0"
+                  >
+                    <span className="text-xs text-white/80">{startTime}</span>
+                    <RiArrowDownSLine className="text-white/50 text-base" />
+                  </button>
 
-                <span className="text-[10px] text-white/40">to</span>
+                  <span className="text-[10px] text-white/40">to</span>
 
-                {/* End Time */}
-                <button
-                  ref={endTimeRef}
-                  type="button"
-                  onClick={() => {
-                    setActiveTimeField("end");
-                    setIsTimePickerOpen(true);
-                  }}
-                  className="flex-1 flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 hover:bg-white/10 transition-colors shrink-0"
-                >
-                  <span className="text-xs text-white/80">{endTime}</span>
-                  <RiArrowDownSLine className="text-white/50 text-base" />
-                </button>
+                  {/* End Time */}
+                  <button
+                    ref={endTimeRef}
+                    type="button"
+                    onClick={() => {
+                      setActiveTimeField("end");
+                      setIsTimePickerOpen(true);
+                    }}
+                    className="flex-1 flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 hover:bg-white/10 transition-colors shrink-0"
+                  >
+                    <span className="text-xs text-white/80">{endTime}</span>
+                    <RiArrowDownSLine className="text-white/50 text-base" />
+                  </button>
+                </div>
 
                 {/* Time Picker Popover */}
                 {isTimePickerOpen && (
@@ -459,6 +512,9 @@ const TimeBoxing = () => {
                         } else {
                           setEndTime(time);
                         }
+                        setIsDuplicateTime(false);
+                        setIsInvalidTime(false);
+                        setIsOverlappingTime(false);
                       }}
                       onClose={() => setIsTimePickerOpen(false)}
                       triggerRef={
@@ -467,6 +523,24 @@ const TimeBoxing = () => {
                     />
                   </div>
                 )}
+
+                <div className="">
+                  {isDuplicateTime && (
+                    <div className="text-red-400 text-xs mb-1">
+                      A time block with this start time already exists!
+                    </div>
+                  )}
+                  {isInvalidTime && (
+                    <div className="text-red-400 text-xs mb-1">
+                      End time must be later than start time!
+                    </div>
+                  )}
+                  {isOverlappingTime && (
+                    <div className="text-red-400 text-xs mb-1">
+                      This time block overlaps with an existing time block!
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Subtask */}

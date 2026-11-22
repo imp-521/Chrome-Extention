@@ -1,28 +1,33 @@
 "use client";
 import Clock from "@/src/components/Clock/Clock";
 import Dashboard from "@/src/components/Dashboard/Dashboard";
+import SettingsModal from "@/src/components/Settings/SettingsModal";
 import SettingsButton from "@/src/components/SettingsButton/SettingsButton";
 import Shortcuts from "@/src/components/Shortcuts/Shortcuts";
 import StartButton from "@/src/components/StartButton/StartButton";
 
 import React, { useState } from "react";
 
-
 const page = () => {
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
   return (
     <main
       style={{ backgroundImage: "url('/default-wallpaper.jpg')" }}
       className="h-dvh w-full overflow-hidden bg-cover bg-center bg-no-repeat relative"
     >
-      <Clock isDashboard={showDashboard}/>
+      <Clock isDashboard={showDashboard} />
       {showDashboard ? (
-        <Dashboard onClose={() => setShowDashboard(false)}/>
+        <Dashboard onClose={() => setShowDashboard(false)} />
       ) : (
         <>
           <Shortcuts />
-          <StartButton onStart={()=> setShowDashboard(true)}/>
-          <SettingsButton />
+          <StartButton onStart={() => setShowDashboard(true)} />
+          <SettingsButton onClick={() => setShowSettings(true)} />
+          {showSettings && (
+            <SettingsModal onClose={() => setShowSettings(false)} />
+          )}
         </>
       )}
     </main>
