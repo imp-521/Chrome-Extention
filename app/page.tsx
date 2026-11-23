@@ -5,12 +5,41 @@ import SettingsModal from "@/src/components/Settings/SettingsModal";
 import SettingsButton from "@/src/components/SettingsButton/SettingsButton";
 import Shortcuts from "@/src/components/Shortcuts/Shortcuts";
 import StartButton from "@/src/components/StartButton/StartButton";
-
 import React, { useState } from "react";
+
+type Wallpaper = {
+  type: "image" | "video";
+  dataUrl: string;
+  name: string;
+};
 
 const page = () => {
   const [showDashboard, setShowDashboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [wallpaper, setWallpaper] = useState<Wallpaper | null>(null);
+
+  const handleWallpaperPick = (fileOrWallpaper: File | Wallpaper) => {
+    if (fileOrWallpaper instanceof File) {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        setWallpaper({
+          type: fileOrWallpaper.type.startsWith("video/") ? "video" : "image",
+          dataUrl: String(reader.result),
+          name: fileOrWallpaper.name,
+        });
+      };
+
+      reader.readAsDataURL(fileOrWallpaper);
+      return;
+    }
+
+    setWallpaper(fileOrWallpaper);
+  };
+
+  const handleWallpaperReset = () => {
+    setWallpaper(null);
+  };
 
   return (
     <main
