@@ -1,5 +1,4 @@
 
-
 export type SettingsTab =
   | "appearance"
   | "dashboard"
@@ -7,3 +6,10 @@ export type SettingsTab =
   | "shortcuts"
   | "timeboxing"
   | "backup";
+
+
+  export type Wallpaper = {
+  type: "image" | "video";
+  dataUrl: string;
+  name: string;
+};

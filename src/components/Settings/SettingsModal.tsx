@@ -8,13 +8,19 @@ import IslandSettings from "./IslandSettings";
 import ShortcutsSettings from "./ShortcutsSettings";
 import TimeBoxingSettings from "./TimeBoxingSettings";
 import BackupSettings from "./BackupSettings";
+import { Wallpaper } from "./settings.types";
 
 type SettingsModalProps = {
   onClose: () => void;
+  wallpaper: Wallpaper | null;
+  onWallpaperPick: (fileOrWallpaper: File | Wallpaper) => void;
+  onWallpaperReset: () => void;
 };
 
-const settingsComponents: Record<SettingsTab, React.ComponentType> = {
-  appearance: AppearanceSettings,
+const settingsComponents: Record<
+  Exclude<SettingsTab, "appearance">,
+  React.ComponentType
+> = {
   dashboard: DashboardSettings,
   island: IslandSettings,
   shortcuts: ShortcutsSettings,
@@ -22,9 +28,14 @@ const settingsComponents: Record<SettingsTab, React.ComponentType> = {
   backup: BackupSettings,
 };
 
-const SettingsModal = ({ onClose }: SettingsModalProps) => {
+const SettingsModal = ({
+  onClose,
+  wallpaper,
+  onWallpaperPick,
+  onWallpaperReset,
+}: SettingsModalProps) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("appearance");
-  const ActiveSettingsComponent = settingsComponents[activeTab];
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
@@ -46,17 +57,27 @@ const SettingsModal = ({ onClose }: SettingsModalProps) => {
             <IoMdClose size={24} />
           </button>
 
-            <h2 id="settings-title" className="text-xl font-bold">
-              Settings
-            </h2>
-
+          <h2 id="settings-title" className="text-xl font-bold">
+            Settings
+          </h2>
         </div>
 
         <div className="mt-6 flex min-h-0 flex-1">
           <SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
           <div className="min-w-0 flex-1 overflow-y-auto p-4">
-            <ActiveSettingsComponent />
+            {activeTab === "appearance" ? (
+              <AppearanceSettings
+                wallpaper={wallpaper}
+                onWallpaperPick={onWallpaperPick}
+                onWallpaperReset={onWallpaperReset}
+              />
+            ) : (
+              (() => {
+                const ActiveSettingsComponent = settingsComponents[activeTab];
+                return <ActiveSettingsComponent />;
+              })()
+            )}
           </div>
         </div>
       </div>

@@ -55,7 +55,12 @@ const page = () => {
           <StartButton onStart={() => setShowDashboard(true)} />
           <SettingsButton onClick={() => setShowSettings(true)} />
           {showSettings && (
-            <SettingsModal onClose={() => setShowSettings(false)} />
+            <SettingsModal
+              onClose={() => setShowSettings(false)}
+              wallpaper={wallpaper}
+              onWallpaperPick={handleWallpaperPick}
+              onWallpaperReset={handleWallpaperReset}
+            />
           )}
         </>
       )}
