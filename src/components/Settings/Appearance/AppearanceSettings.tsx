@@ -4,7 +4,7 @@ import TypographySettings from "./TypographySettings";
 import { Wallpaper } from "../settings.types";
 
 type AppearanceSettingsProps = {
-  wallpaper: Wallpaper | null;
+  wallpaper: Wallpaper;
   onWallpaperPick: (fileOrWallpaper: File | Wallpaper) => void;
   onWallpaperReset: () => void;
 };
@@ -15,14 +15,24 @@ const AppearanceSettings = ({
   onWallpaperReset,
 }: AppearanceSettingsProps) => {
   return (
-    <div className="space-y-8">
-      <WallpaperSettings
+    <div className="w-full flex flex-col">
+      <div className="pb-5">
+        <h3 className="font-bold">Appearance & Theme</h3>
+      </div>
+      <div>
+        <WallpaperSettings
         wallpaper={wallpaper}
         onWallpaperPick={onWallpaperPick}
         onWallpaperReset={onWallpaperReset}
       />
-      <ThemeSettings />
-      <TypographySettings />
+      </div>
+
+
+
+
+
+      {/* <ThemeSettings />
+      <TypographySettings /> */}
     </div>
   );
 };

@@ -9,10 +9,11 @@ import ShortcutsSettings from "./ShortcutsSettings";
 import TimeBoxingSettings from "./TimeBoxingSettings";
 import BackupSettings from "./BackupSettings";
 import { Wallpaper } from "./settings.types";
+import { FiSettings } from "react-icons/fi";
 
 type SettingsModalProps = {
   onClose: () => void;
-  wallpaper: Wallpaper | null;
+  wallpaper: Wallpaper;
   onWallpaperPick: (fileOrWallpaper: File | Wallpaper) => void;
   onWallpaperReset: () => void;
 };
@@ -42,30 +43,33 @@ const SettingsModal = ({
       onClick={onClose}
     >
       <div
-        className=" flex flex-col relative h-[80vh] w-[85vw] max-w-5xl rounded-2xl bg-[#1e1e1e] p-6 text-white"
+        className=" flex flex-col relative h-[80vh] w-[85vw] max-w-5xl rounded-2xl figma-glass-static text-white"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
       >
-        <div>
+        <div className="w-full border-b border-white/10 p-4 flex items-center justify-between flex-row-reverse z-50">
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 cursor-pointer"
+            className="cursor-pointer w-9 h-9 flex items-center justify-center rounded-full figma-glass-static text-white"
             aria-label="Close settings"
           >
-            <IoMdClose size={24} />
+            <IoMdClose size={16} />
           </button>
 
-          <h2 id="settings-title" className="text-xl font-bold">
+          <div className="flex flex-row-reverse gap-2 items-center">
+          <h2 id="settings-title" className="text-lg font-bold select-none">
             Settings
           </h2>
+          <div className="w-9 h-9 flex items-center justify-center rounded-full figma-glass-static text-white"><FiSettings /></div>
+          </div>
         </div>
 
-        <div className="mt-6 flex min-h-0 flex-1">
+        <div className="mt-0 flex min-h-0 flex-1">
           <SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-          <div className="min-w-0 flex-1 overflow-y-auto p-4">
+          <div className="min-w-0 flex-1 overflow-y-auto px-15 py-7 scrollbar-hide">
             {activeTab === "appearance" ? (
               <AppearanceSettings
                 wallpaper={wallpaper}

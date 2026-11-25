@@ -16,7 +16,11 @@ type Wallpaper = {
 const page = () => {
   const [showDashboard, setShowDashboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [wallpaper, setWallpaper] = useState<Wallpaper | null>(null);
+  const [wallpaper, setWallpaper] = useState<Wallpaper>({
+    type: "image",
+    dataUrl: "/default-wallpaper.jpg",
+    name: "Default Wallpaper",
+  });
 
   const handleWallpaperPick = (fileOrWallpaper: File | Wallpaper) => {
     if (fileOrWallpaper instanceof File) {
@@ -38,32 +42,52 @@ const page = () => {
   };
 
   const handleWallpaperReset = () => {
-    setWallpaper(null);
+    setWallpaper({
+      type: "image",
+      dataUrl: "/default-wallpaper.jpg",
+      name: "Default Wallpaper",
+    });
   };
 
   return (
     <main
-      style={{ backgroundImage: "url('/default-wallpaper.jpg')" }}
+      style={{
+        backgroundImage:
+          wallpaper.type === "image" ? `url('${wallpaper.dataUrl}')` : "none",
+      }}
       className="h-dvh w-full overflow-hidden bg-cover bg-center bg-no-repeat relative"
     >
-      <Clock isDashboard={showDashboard} />
-      {showDashboard ? (
-        <Dashboard onClose={() => setShowDashboard(false)} />
-      ) : (
-        <>
-          <Shortcuts />
-          <StartButton onStart={() => setShowDashboard(true)} />
-          <SettingsButton onClick={() => setShowSettings(true)} />
-          {showSettings && (
-            <SettingsModal
-              onClose={() => setShowSettings(false)}
-              wallpaper={wallpaper}
-              onWallpaperPick={handleWallpaperPick}
-              onWallpaperReset={handleWallpaperReset}
-            />
-          )}
-        </>
+      {wallpaper.type === "video" && (
+        <video
+          src={wallpaper.dataUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover z-0"
+        />
       )}
+
+      <div className="relative z-10 h-full w-full">
+        <Clock isDashboard={showDashboard} />
+        {showDashboard ? (
+          <Dashboard onClose={() => setShowDashboard(false)} />
+        ) : (
+          <>
+            <Shortcuts />
+            <StartButton onStart={() => setShowDashboard(true)} />
+            <SettingsButton onClick={() => setShowSettings(true)} />
+            {showSettings && (
+              <SettingsModal
+                onClose={() => setShowSettings(false)}
+                wallpaper={wallpaper}
+                onWallpaperPick={handleWallpaperPick}
+                onWallpaperReset={handleWallpaperReset}
+              />
+            )}
+          </>
+        )}
+      </div>
     </main>
   );
 };
