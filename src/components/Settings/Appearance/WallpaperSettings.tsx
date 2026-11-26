@@ -14,6 +14,13 @@ const WallpaperSettings = ({
 }: WallpaperSettingsProps) => {
   const wallpaperInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [wallpaperUrl, setWallpaperUrl] = useState("");
+
+  const newWallpaper: Wallpaper = {
+    type: "image",
+    dataUrl: wallpaperUrl,
+    name: "Online Wallpaper",
+  };
 
   return (
     <div className="figma-glass-static rounded-2xl p-5 shadow-lg">
@@ -36,7 +43,11 @@ const WallpaperSettings = ({
           onChange={(event) => {
             const file = event.target.files?.[0];
 
-            if (file) {
+            if (!file) return;
+            if (
+              file.type.startsWith("image/") ||
+              file.type.startsWith("video/")
+            ) {
               onWallpaperPick(file);
             }
           }}
@@ -63,11 +74,21 @@ const WallpaperSettings = ({
           onDrop={(event) => {
             event.preventDefault();
             const file = event.dataTransfer.files[0];
-            if (file) {
+            if (!file) return;
+            if (
+              file.type.startsWith("image/") ||
+              file.type.startsWith("video/")
+            ) {
               onWallpaperPick(file);
             }
           }}
-          className="flex min-h-40 items-center justify-center overflow-hidden rounded-xl border-white/20 bg-black/10 transition hover:border-white/40 figma-glass-static"
+          onDragEnter={() => setIsDragging(true)}
+          onDragLeave={() => setIsDragging(false)}
+          className={`flex min-h-40 items-center justify-center overflow-hidden rounded-xl border border-dashed p-3 transition relative ${
+            isDragging
+              ? "border-white/80 bg-white/10"
+              : "border-white/20 bg-black/10 hover:border-white/40"
+          }`}
         >
           {wallpaper ? (
             <div className="w-full overflow-hidden rounded-lg">
@@ -100,7 +121,7 @@ const WallpaperSettings = ({
           )}
           <div
             title={wallpaper.name}
-            className="absolute bottom-3 left-3 max-w-[80%] truncate rounded-full border border-white/15 bg-black/45 px-3 py-1.5 text-[10px] font-medium text-white/90 shadow-lg backdrop-blur-md"
+            className="absolute bottom-5 left-5 max-w-[80%] truncate rounded-full border border-white/15 bg-black/45 px-3 py-1.5 text-[10px] font-medium text-white/90 shadow-lg backdrop-blur-md"
           >
             {wallpaper.name}
           </div>
@@ -118,11 +139,18 @@ const WallpaperSettings = ({
           <input
             id="wallpaper-url"
             type="url"
+            value={wallpaperUrl}
+            onChange={(event) => setWallpaperUrl(event.target.value)}
             placeholder="https://example.com/image.jpg"
             className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/15 px-3 py-2 text-xs text-white outline-none placeholder:text-white/30 transition focus:border-white/30 focus:bg-black/20"
           />
 
-          <button className="shrink-0 cursor-pointer rounded-lg border border-white/15 bg-white/15 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/25">
+          <button
+            onClick={() => {
+              onWallpaperPick(newWallpaper);
+            }}
+            className="shrink-0 cursor-pointer rounded-lg border border-white/15 bg-white/15 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/25"
+          >
             Apply Link
           </button>
         </div>

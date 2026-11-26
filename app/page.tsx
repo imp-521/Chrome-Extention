@@ -13,6 +13,7 @@ type Wallpaper = {
   name: string;
 };
 
+
 const page = () => {
   const [showDashboard, setShowDashboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -28,7 +29,7 @@ const page = () => {
 
       reader.onload = () => {
         setWallpaper({
-          type: fileOrWallpaper.type.startsWith("video/") ? "video" : "image",
+          type: fileOrWallpaper.type.startsWith("video/" ) ? "video" : "image",
           dataUrl: String(reader.result),
           name: fileOrWallpaper.name,
         });
@@ -37,7 +38,7 @@ const page = () => {
       reader.readAsDataURL(fileOrWallpaper);
       return;
     }
-
+    console.log("New wallpaper:", fileOrWallpaper);
     setWallpaper(fileOrWallpaper);
   };
 
