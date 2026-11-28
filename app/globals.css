@@ -1,4 +1,12 @@
 @import "tailwindcss";
+
+@import "../src/Themes/styles/cyberpunk.css";
+@import "../src/Themes/styles/manga.css";
+@import "../src/Themes/styles/pixel.css";
+@import "../src/Themes/styles/atmospheres.css";
+
+
+
 @font-face {
     font-family: "Heathergreen";
     src: url(/Heathergreen.otf);

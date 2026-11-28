@@ -16,6 +16,8 @@ type SettingsModalProps = {
   wallpaper: Wallpaper;
   onWallpaperPick: (fileOrWallpaper: File | Wallpaper) => void;
   onWallpaperReset: () => void;
+  activeTheme: string;
+  onThemeChange: (themeId: string) => void;
 };
 
 const settingsComponents: Record<
@@ -34,6 +36,8 @@ const SettingsModal = ({
   wallpaper,
   onWallpaperPick,
   onWallpaperReset,
+  activeTheme,
+  onThemeChange
 }: SettingsModalProps) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("appearance");
 
@@ -75,6 +79,8 @@ const SettingsModal = ({
                 wallpaper={wallpaper}
                 onWallpaperPick={onWallpaperPick}
                 onWallpaperReset={onWallpaperReset}
+                activeTheme={activeTheme}
+                onThemeChange={onThemeChange}
               />
             ) : (
               (() => {

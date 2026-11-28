@@ -13,3 +13,13 @@ export type SettingsTab =
   dataUrl: string;
   name: string;
 };
+
+export type UITheme = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  image: string;
+  preview: string[];
+  beta?: boolean;
+};

@@ -13,7 +13,6 @@ type Wallpaper = {
   name: string;
 };
 
-
 const page = () => {
   const [showDashboard, setShowDashboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -22,6 +21,7 @@ const page = () => {
     dataUrl: "/default-wallpaper.jpg",
     name: "Default Wallpaper",
   });
+  const [activeTheme, setActiveTheme] = useState("default");
 
   const handleWallpaperPick = (fileOrWallpaper: File | Wallpaper) => {
     if (fileOrWallpaper instanceof File) {
@@ -29,7 +29,7 @@ const page = () => {
 
       reader.onload = () => {
         setWallpaper({
-          type: fileOrWallpaper.type.startsWith("video/" ) ? "video" : "image",
+          type: fileOrWallpaper.type.startsWith("video/") ? "video" : "image",
           dataUrl: String(reader.result),
           name: fileOrWallpaper.name,
         });
@@ -52,6 +52,7 @@ const page = () => {
 
   return (
     <main
+      data-theme={activeTheme}
       style={{
         backgroundImage:
           wallpaper.type === "image" ? `url('${wallpaper.dataUrl}')` : "none",
@@ -72,21 +73,27 @@ const page = () => {
       <div className="relative z-10 h-full w-full">
         <Clock isDashboard={showDashboard} />
         {showDashboard ? (
-          <Dashboard onClose={() => setShowDashboard(false)} />
+          <Dashboard
+            onClose={() => setShowDashboard(false)}
+            onSettingsClick={() => setShowSettings(true)}
+          />
         ) : (
           <>
             <Shortcuts />
             <StartButton onStart={() => setShowDashboard(true)} />
             <SettingsButton onClick={() => setShowSettings(true)} />
-            {showSettings && (
-              <SettingsModal
-                onClose={() => setShowSettings(false)}
-                wallpaper={wallpaper}
-                onWallpaperPick={handleWallpaperPick}
-                onWallpaperReset={handleWallpaperReset}
-              />
-            )}
           </>
+        )}
+
+        {showSettings && (
+          <SettingsModal
+            onClose={() => setShowSettings(false)}
+            wallpaper={wallpaper}
+            onWallpaperPick={handleWallpaperPick}
+            onWallpaperReset={handleWallpaperReset}
+            activeTheme={activeTheme}
+            onThemeChange={setActiveTheme}
+          />
         )}
       </div>
     </main>

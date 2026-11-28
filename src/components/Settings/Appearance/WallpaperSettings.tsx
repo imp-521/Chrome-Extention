@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import type { Wallpaper } from "../settings.types";
+import { FiUploadCloud } from "react-icons/fi";
 
 type WallpaperSettingsProps = {
   wallpaper: Wallpaper;
@@ -84,44 +85,47 @@ const WallpaperSettings = ({
           }}
           onDragEnter={() => setIsDragging(true)}
           onDragLeave={() => setIsDragging(false)}
-          className={`flex min-h-40 items-center justify-center overflow-hidden rounded-xl border border-dashed p-3 transition relative ${
-            isDragging
-              ? "border-white/80 bg-white/10"
-              : "border-white/20 bg-black/10 hover:border-white/40"
-          }`}
+          className="group flex min-h-40 items-center justify-center overflow-hidden rounded-xl border border-dashed transition relative"
         >
-          {wallpaper ? (
-            <div className="w-full overflow-hidden rounded-lg">
-              {wallpaper.type === "image" ? (
-                <img
-                  src={wallpaper.dataUrl}
-                  alt="Wallpaper preview"
-                  className="max-h-40 w-full rounded-lg object-cover"
-                />
-              ) : (
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  src={wallpaper.dataUrl}
-                  className="max-h-40 w-full rounded-lg object-cover"
-                />
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2 text-center">
-              <p className="text-sm text-white/70">
+          <div className="w-full overflow-hidden rounded-lg">
+            {wallpaper.type === "image" ? (
+              <img
+                src={wallpaper.dataUrl}
+                alt="Wallpaper preview"
+                className="max-h-40 w-full rounded-lg object-cover"
+              />
+            ) : (
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                src={wallpaper.dataUrl}
+                className="max-h-40 w-full rounded-lg object-cover"
+              />
+            )}
+          </div>
+          {wallpaper && (
+            <div
+              className={`absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-black/65 text-center backdrop-blur-[2px] transition-opacity duration-300 pointer-events-none ${
+                isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              }`}
+            >
+              <FiUploadCloud size={32} color="white" />
+
+              <p className="text-sm font-medium text-white">
                 Drag & Drop your media here
               </p>
-              <p className="text-xs text-white/40">
+
+              <p className="text-xs text-white/60">
                 or click Upload Media to browse files
               </p>
             </div>
           )}
+
           <div
             title={wallpaper.name}
-            className="absolute bottom-5 left-5 max-w-[80%] truncate rounded-full border border-white/15 bg-black/45 px-3 py-1.5 text-[10px] font-medium text-white/90 shadow-lg backdrop-blur-md"
+            className="absolute bottom-3 left-3 max-w-[80%] truncate rounded-full border border-white/15 bg-black/45 px-3 py-1.5 text-[10px] font-medium text-white/90 shadow-lg backdrop-blur-md"
           >
             {wallpaper.name}
           </div>
